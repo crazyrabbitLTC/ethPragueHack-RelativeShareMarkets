@@ -11,7 +11,8 @@
     "deploy": "cd contracts && forge script script/DeployAndVerify.s.sol --rpc-url $ARBITRUM_RPC_URL --broadcast",
     "deploy:dryrun": "cd contracts && forge script script/DeployAndVerify.s.sol --rpc-url $ARBITRUM_RPC_URL",
     "deploy:verify": "cd contracts && forge script script/DeployAndVerify.s.sol --rpc-url $ARBITRUM_RPC_URL --broadcast --verify --etherscan-api-key $ARBISCAN_API_KEY",
-    "demo": "npx ts-node scripts/demo.ts"
+    "demo": "npx ts-node scripts/demo.ts",
+    "test-deployed": "npx ts-node scripts/test-deployed.ts"
   },
   "keywords": [],
   "author": "",

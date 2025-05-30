@@ -3,7 +3,13 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "setup-keys": "npx ts-node scripts/setup-keys.ts",
+    "fund-wallets": "npx ts-node scripts/fund-wallets.ts",
+    "return-funds": "npx ts-node scripts/return-funds.ts",
+    "deploy": "cd contracts && forge script script/Deploy.s.sol --rpc-url $ARBITRUM_RPC_URL --broadcast",
+    "deploy:verify": "cd contracts && forge script script/Deploy.s.sol --rpc-url $ARBITRUM_RPC_URL --broadcast --verify",
+    "demo": "npx ts-node scripts/demo.ts"
   },
   "keywords": [],
   "author": "",

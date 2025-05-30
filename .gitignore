@@ -32,6 +32,11 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# Generated keys and records
+keys.json
+funding-record.json
+return-record.json
+
 # IDE
 .vscode/
 .idea/

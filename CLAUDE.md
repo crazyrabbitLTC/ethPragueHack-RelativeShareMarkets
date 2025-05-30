@@ -1,0 +1,6 @@
+- Use Test Driven Development
+- Always first create a test that fails, *then* write code to make the test pass
+- When updating code that should behave differently, first update the test to the new expect output, it should fail, and then update the code so the test passes
+- Run the tests before and after each change
+- Stay focused
+- Build in iteratively, stay focused and solve a single problem at a time 

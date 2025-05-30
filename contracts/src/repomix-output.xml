@@ -1,0 +1,733 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+interfaces/
+  IPyth.sol
+mocks/
+  MockUSDC.sol
+RatioOracle.sol
+SimplePerp.sol
+SimplePerpV2.sol
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="interfaces/IPyth.sol">
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+interface IPyth {
+    struct Price {
+        int64 price;
+        uint64 conf;
+        int32 expo;
+        uint publishTime;
+    }
+
+    function getPriceUnsafe(bytes32 id) external view returns (Price memory price);
+    function getPrice(bytes32 id) external view returns (Price memory price);
+    function updatePriceFeeds(bytes[] calldata updateData) external payable;
+    function getUpdateFee(bytes[] calldata updateData) external view returns (uint fee);
+}
+</file>
+
+<file path="mocks/MockUSDC.sol">
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+import "forge-std/interfaces/IERC20.sol";
+
+contract MockUSDC is IERC20 {
+    mapping(address => uint256) private _balances;
+    mapping(address => mapping(address => uint256)) private _allowances;
+    
+    uint256 public totalSupply;
+    string public constant name = "USD Coin";
+    string public constant symbol = "USDC";
+    uint8 public constant decimals = 6;
+    
+    function mint(address to, uint256 amount) external {
+        _balances[to] += amount;
+        totalSupply += amount;
+        emit Transfer(address(0), to, amount);
+    }
+    
+    function balanceOf(address account) external view returns (uint256) {
+        return _balances[account];
+    }
+    
+    function transfer(address to, uint256 amount) external returns (bool) {
+        require(_balances[msg.sender] >= amount, "Insufficient balance");
+        _balances[msg.sender] -= amount;
+        _balances[to] += amount;
+        emit Transfer(msg.sender, to, amount);
+        return true;
+    }
+    
+    function allowance(address owner, address spender) external view returns (uint256) {
+        return _allowances[owner][spender];
+    }
+    
+    function approve(address spender, uint256 amount) external returns (bool) {
+        _allowances[msg.sender][spender] = amount;
+        emit Approval(msg.sender, spender, amount);
+        return true;
+    }
+    
+    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
+        require(_balances[from] >= amount, "Insufficient balance");
+        require(_allowances[from][msg.sender] >= amount, "Insufficient allowance");
+        
+        _balances[from] -= amount;
+        _balances[to] += amount;
+        _allowances[from][msg.sender] -= amount;
+        
+        emit Transfer(from, to, amount);
+        return true;
+    }
+}
+</file>
+
+<file path="RatioOracle.sol">
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+import "./interfaces/IPyth.sol";
+
+contract RatioOracle {
+    IPyth public pyth;
+    
+    mapping(string => uint256) public mockPrices;
+    mapping(string => bytes32) public priceIds;
+    
+    bool public useMockPrices = true;
+    uint256 public constant MAX_PRICE_AGE = 5 minutes;
+    
+    event PricesUpdated(uint256 timestamp);
+    event PythOracleSet(address pyth);
+    
+    constructor() {
+        // Arbitrum mainnet price IDs
+        priceIds["ETH"] = 0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace;
+        priceIds["BTC"] = 0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43;
+    }
+    
+    function setPythOracle(address _pyth) external {
+        pyth = IPyth(_pyth);
+        useMockPrices = false;
+        emit PythOracleSet(_pyth);
+    }
+    
+    function setPrice(string memory token, uint256 price) external {
+        mockPrices[token] = price;
+    }
+    
+    function setPriceId(string memory token, bytes32 priceId) external {
+        priceIds[token] = priceId;
+    }
+    
+    function updatePriceFeeds(bytes[] calldata priceUpdateData) external payable {
+        require(address(pyth) != address(0), "Pyth oracle not set");
+        
+        uint fee = pyth.getUpdateFee(priceUpdateData);
+        require(msg.value >= fee, "Insufficient fee");
+        
+        pyth.updatePriceFeeds{value: fee}(priceUpdateData);
+        
+        emit PricesUpdated(block.timestamp);
+        
+        // Refund excess fee
+        if (msg.value > fee) {
+            payable(msg.sender).transfer(msg.value - fee);
+        }
+    }
+    
+    function getPrice(string memory token) public view returns (uint256) {
+        if (useMockPrices) {
+            return mockPrices[token];
+        }
+        
+        bytes32 priceId = priceIds[token];
+        require(priceId != bytes32(0), "Price ID not set");
+        
+        IPyth.Price memory pythPrice = pyth.getPriceUnsafe(priceId);
+        
+        // Check price validity
+        require(pythPrice.price > 0, "Invalid price");
+        
+        // Check staleness
+        require(block.timestamp - pythPrice.publishTime <= MAX_PRICE_AGE, "Price too stale");
+        
+        // Convert price with proper exponent handling
+        // Pyth prices are in the format: price * 10^expo
+        // We want to normalize to 1e18 for consistency
+        uint256 price = uint256(uint64(pythPrice.price));
+        int32 expo = pythPrice.expo;
+        
+        if (expo >= 0) {
+            // Positive exponent: multiply
+            return price * (10 ** uint32(expo)) * 1e10; // Additional 1e10 to get to 1e18
+        } else {
+            // Negative exponent: divide
+            // Most Pyth prices are 1e8, so we multiply by 1e10 to get 1e18
+            uint32 absExpo = uint32(-expo);
+            if (absExpo == 8) {
+                return price * 1e10; // 1e8 * 1e10 = 1e18
+            } else if (absExpo > 8) {
+                return price * 1e10 / (10 ** (absExpo - 8));
+            } else {
+                return price * 1e10 * (10 ** (8 - absExpo));
+            }
+        }
+    }
+    
+    function getRatioShare(string memory baseToken, string memory quoteToken) external view returns (uint256) {
+        uint256 basePrice = getPrice(baseToken);
+        uint256 quotePrice = getPrice(quoteToken);
+        
+        uint256 totalValue = basePrice + quotePrice;
+        
+        require(totalValue > 0, "Total value cannot be zero");
+        
+        // Return share as 1e18 scaled value
+        return (basePrice * 1e18) / totalValue;
+    }
+    
+    function getUpdateFee(bytes[] calldata priceUpdateData) external view returns (uint256) {
+        require(address(pyth) != address(0), "Pyth oracle not set");
+        return pyth.getUpdateFee(priceUpdateData);
+    }
+}
+</file>
+
+<file path="SimplePerp.sol">
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+import "forge-std/interfaces/IERC20.sol";
+import "./RatioOracle.sol";
+
+contract SimplePerp {
+    struct Position {
+        string baseToken;
+        string quoteToken;
+        uint256 notional;
+        bool isLong;
+        uint256 entryShare;
+    }
+    
+    IERC20 public immutable collateralToken;
+    RatioOracle public immutable oracle;
+    
+    uint256 public constant INITIAL_MARGIN_RATIO = 30;
+    uint256 public constant PRECISION = 100;
+    
+    mapping(address => uint256) public balances;
+    mapping(address => Position) public positions;
+    
+    event Deposit(address indexed user, uint256 amount);
+    event Withdraw(address indexed user, uint256 amount);
+    event PositionOpened(address indexed user, string baseToken, string quoteToken, uint256 notional, bool isLong);
+    event PositionClosed(address indexed user, int256 pnl);
+    
+    constructor(address _collateralToken, address _oracle) {
+        collateralToken = IERC20(_collateralToken);
+        oracle = RatioOracle(_oracle);
+    }
+    
+    function deposit(uint256 amount) external {
+        require(amount > 0, "Amount must be greater than 0");
+        
+        collateralToken.transferFrom(msg.sender, address(this), amount);
+        balances[msg.sender] += amount;
+        
+        emit Deposit(msg.sender, amount);
+    }
+    
+    function withdraw(uint256 amount) external {
+        require(amount > 0, "Amount must be greater than 0");
+        require(balances[msg.sender] >= amount, "Insufficient balance");
+        require(positions[msg.sender].notional == 0, "Cannot withdraw with open position");
+        
+        balances[msg.sender] -= amount;
+        collateralToken.transfer(msg.sender, amount);
+        
+        emit Withdraw(msg.sender, amount);
+    }
+    
+    function openPosition(
+        string memory baseToken,
+        string memory quoteToken,
+        uint256 notional,
+        bool isLong
+    ) external {
+        require(positions[msg.sender].notional == 0, "Position already open");
+        require(notional > 0, "Notional must be greater than 0");
+        
+        uint256 requiredMargin = (notional * INITIAL_MARGIN_RATIO) / PRECISION;
+        require(balances[msg.sender] >= requiredMargin, "Insufficient margin");
+        
+        uint256 entryShare = oracle.getRatioShare(baseToken, quoteToken);
+        
+        positions[msg.sender] = Position({
+            baseToken: baseToken,
+            quoteToken: quoteToken,
+            notional: notional,
+            isLong: isLong,
+            entryShare: entryShare
+        });
+        
+        emit PositionOpened(msg.sender, baseToken, quoteToken, notional, isLong);
+    }
+    
+    function closePosition() external {
+        Position memory position = positions[msg.sender];
+        require(position.notional > 0, "No position to close");
+        
+        uint256 currentShare = oracle.getRatioShare(position.baseToken, position.quoteToken);
+        
+        int256 pnl = calculatePnl(position, currentShare);
+        
+        delete positions[msg.sender];
+        
+        if (pnl > 0) {
+            balances[msg.sender] += uint256(pnl);
+        } else if (pnl < 0) {
+            uint256 loss = uint256(-pnl);
+            if (loss > balances[msg.sender]) {
+                balances[msg.sender] = 0;
+            } else {
+                balances[msg.sender] -= loss;
+            }
+        }
+        
+        emit PositionClosed(msg.sender, pnl);
+    }
+    
+    function calculatePnl(Position memory position, uint256 currentShare) internal pure returns (int256) {
+        int256 shareChange = int256(currentShare) - int256(position.entryShare);
+        
+        int256 pnl = (int256(position.notional) * shareChange) / 1e18;
+        
+        if (!position.isLong) {
+            pnl = -pnl;
+        }
+        
+        return pnl;
+    }
+    
+    function getPositionValue(address user) external view returns (int256) {
+        Position memory position = positions[user];
+        if (position.notional == 0) {
+            return 0;
+        }
+        
+        uint256 currentShare = oracle.getRatioShare(position.baseToken, position.quoteToken);
+        return calculatePnl(position, currentShare);
+    }
+}
+</file>
+
+<file path="SimplePerpV2.sol">
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+import "forge-std/interfaces/IERC20.sol";
+import "./RatioOracle.sol";
+
+contract SimplePerpV2 {
+    struct Position {
+        string baseToken;
+        string quoteToken;
+        uint256 notional;
+        bool isLong;
+        uint256 entryShare;
+        uint256 openedAt;
+        uint256 lastUpdated;
+    }
+    
+    struct UserInfo {
+        uint256 balance;
+        uint256 totalDeposited;
+        uint256 totalWithdrawn;
+        uint256 realizedPnl;
+        uint256 positionCount;
+    }
+    
+    IERC20 public immutable collateralToken;
+    RatioOracle public immutable oracle;
+    
+    uint256 public constant INITIAL_MARGIN_RATIO = 30;
+    uint256 public constant PRECISION = 100;
+    
+    mapping(address => uint256) public balances;
+    mapping(address => Position) public positions;
+    mapping(address => UserInfo) public userInfo;
+    
+    address public owner;
+    bool public paused;
+    
+    uint256 public totalDeposits;
+    uint256 public totalOpenInterest;
+    uint256 public totalPositions;
+    
+    // Enhanced events
+    event Deposit(
+        address indexed user, 
+        uint256 amount, 
+        uint256 newBalance,
+        uint256 timestamp
+    );
+    
+    event Withdraw(
+        address indexed user, 
+        uint256 amount, 
+        uint256 newBalance,
+        uint256 timestamp
+    );
+    
+    event PositionOpened(
+        address indexed user,
+        string baseToken,
+        string quoteToken,
+        uint256 notional,
+        bool isLong,
+        uint256 entryShare,
+        uint256 requiredMargin,
+        uint256 timestamp
+    );
+    
+    event PositionClosed(
+        address indexed user,
+        string baseToken,
+        string quoteToken,
+        uint256 notional,
+        bool isLong,
+        uint256 entryShare,
+        uint256 exitShare,
+        int256 pnl,
+        uint256 closedAt
+    );
+    
+    event PositionUpdated(
+        address indexed user,
+        uint256 currentShare,
+        int256 unrealizedPnl,
+        uint256 timestamp
+    );
+    
+    event EmergencyPause(address indexed by, uint256 timestamp);
+    event Unpause(address indexed by, uint256 timestamp);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner");
+        _;
+    }
+    
+    modifier whenNotPaused() {
+        require(!paused, "Contract is paused");
+        _;
+    }
+    
+    constructor(address _collateralToken, address _oracle) {
+        collateralToken = IERC20(_collateralToken);
+        oracle = RatioOracle(_oracle);
+        owner = msg.sender;
+    }
+    
+    // Admin functions
+    function pause() external onlyOwner {
+        paused = true;
+        emit EmergencyPause(msg.sender, block.timestamp);
+    }
+    
+    function unpause() external onlyOwner {
+        paused = false;
+        emit Unpause(msg.sender, block.timestamp);
+    }
+    
+    function transferOwnership(address newOwner) external onlyOwner {
+        require(newOwner != address(0), "Invalid owner");
+        address previousOwner = owner;
+        owner = newOwner;
+        emit OwnershipTransferred(previousOwner, newOwner);
+    }
+    
+    // Core functions
+    function deposit(uint256 amount) external whenNotPaused {
+        require(amount > 0, "Amount must be greater than 0");
+        
+        collateralToken.transferFrom(msg.sender, address(this), amount);
+        balances[msg.sender] += amount;
+        
+        userInfo[msg.sender].balance = balances[msg.sender];
+        userInfo[msg.sender].totalDeposited += amount;
+        
+        totalDeposits += amount;
+        
+        emit Deposit(msg.sender, amount, balances[msg.sender], block.timestamp);
+    }
+    
+    function withdraw(uint256 amount) external whenNotPaused {
+        require(amount > 0, "Amount must be greater than 0");
+        require(balances[msg.sender] >= amount, "Insufficient balance");
+        require(positions[msg.sender].notional == 0, "Cannot withdraw with open position");
+        
+        balances[msg.sender] -= amount;
+        collateralToken.transfer(msg.sender, amount);
+        
+        userInfo[msg.sender].balance = balances[msg.sender];
+        userInfo[msg.sender].totalWithdrawn += amount;
+        
+        totalDeposits -= amount;
+        
+        emit Withdraw(msg.sender, amount, balances[msg.sender], block.timestamp);
+    }
+    
+    function openPosition(
+        string memory baseToken,
+        string memory quoteToken,
+        uint256 notional,
+        bool isLong
+    ) external whenNotPaused {
+        require(positions[msg.sender].notional == 0, "Position already open");
+        require(notional > 0, "Notional must be greater than 0");
+        
+        uint256 requiredMargin = (notional * INITIAL_MARGIN_RATIO) / PRECISION;
+        require(balances[msg.sender] >= requiredMargin, "Insufficient margin");
+        
+        uint256 entryShare = oracle.getRatioShare(baseToken, quoteToken);
+        
+        positions[msg.sender] = Position({
+            baseToken: baseToken,
+            quoteToken: quoteToken,
+            notional: notional,
+            isLong: isLong,
+            entryShare: entryShare,
+            openedAt: block.timestamp,
+            lastUpdated: block.timestamp
+        });
+        
+        userInfo[msg.sender].positionCount++;
+        totalOpenInterest += notional;
+        totalPositions++;
+        
+        emit PositionOpened(
+            msg.sender,
+            baseToken,
+            quoteToken,
+            notional,
+            isLong,
+            entryShare,
+            requiredMargin,
+            block.timestamp
+        );
+    }
+    
+    function closePosition() external {
+        Position memory position = positions[msg.sender];
+        require(position.notional > 0, "No position to close");
+        
+        uint256 currentShare = oracle.getRatioShare(position.baseToken, position.quoteToken);
+        
+        int256 pnl = calculatePnl(position, currentShare);
+        
+        delete positions[msg.sender];
+        
+        if (pnl > 0) {
+            balances[msg.sender] += uint256(pnl);
+            userInfo[msg.sender].realizedPnl += uint256(pnl);
+        } else if (pnl < 0) {
+            uint256 loss = uint256(-pnl);
+            if (loss > balances[msg.sender]) {
+                balances[msg.sender] = 0;
+            } else {
+                balances[msg.sender] -= loss;
+            }
+        }
+        
+        userInfo[msg.sender].balance = balances[msg.sender];
+        totalOpenInterest -= position.notional;
+        totalPositions--;
+        
+        emit PositionClosed(
+            msg.sender,
+            position.baseToken,
+            position.quoteToken,
+            position.notional,
+            position.isLong,
+            position.entryShare,
+            currentShare,
+            pnl,
+            block.timestamp
+        );
+    }
+    
+    function updatePositionTracking(address user) external {
+        Position storage position = positions[user];
+        require(position.notional > 0, "No position");
+        
+        uint256 currentShare = oracle.getRatioShare(position.baseToken, position.quoteToken);
+        int256 unrealizedPnl = calculatePnl(position, currentShare);
+        
+        position.lastUpdated = block.timestamp;
+        
+        emit PositionUpdated(user, currentShare, unrealizedPnl, block.timestamp);
+    }
+    
+    function calculatePnl(Position memory position, uint256 currentShare) internal pure returns (int256) {
+        int256 shareChange = int256(currentShare) - int256(position.entryShare);
+        
+        int256 pnl = (int256(position.notional) * shareChange) / 1e18;
+        
+        if (!position.isLong) {
+            pnl = -pnl;
+        }
+        
+        return pnl;
+    }
+    
+    // View functions
+    function getPositionValue(address user) external view returns (int256) {
+        Position memory position = positions[user];
+        if (position.notional == 0) {
+            return 0;
+        }
+        
+        uint256 currentShare = oracle.getRatioShare(position.baseToken, position.quoteToken);
+        return calculatePnl(position, currentShare);
+    }
+    
+    function getPositionDetails(address user) external view returns (
+        string memory baseToken,
+        string memory quoteToken,
+        uint256 notional,
+        bool isLong,
+        uint256 entryShare,
+        uint256 currentShare,
+        int256 unrealizedPnl,
+        uint256 openedAt,
+        uint256 duration
+    ) {
+        Position memory position = positions[user];
+        require(position.notional > 0, "No position");
+        
+        currentShare = oracle.getRatioShare(position.baseToken, position.quoteToken);
+        unrealizedPnl = calculatePnl(position, currentShare);
+        
+        return (
+            position.baseToken,
+            position.quoteToken,
+            position.notional,
+            position.isLong,
+            position.entryShare,
+            currentShare,
+            unrealizedPnl,
+            position.openedAt,
+            block.timestamp - position.openedAt
+        );
+    }
+    
+    function getUserDetails(address user) external view returns (
+        uint256 balance,
+        uint256 totalDeposited,
+        uint256 totalWithdrawn,
+        uint256 realizedPnl,
+        uint256 positionCount,
+        bool hasOpenPosition,
+        int256 unrealizedPnl
+    ) {
+        UserInfo memory info = userInfo[user];
+        Position memory position = positions[user];
+        
+        hasOpenPosition = position.notional > 0;
+        
+        if (hasOpenPosition) {
+            uint256 currentShare = oracle.getRatioShare(position.baseToken, position.quoteToken);
+            unrealizedPnl = calculatePnl(position, currentShare);
+        }
+        
+        return (
+            balances[user],
+            info.totalDeposited,
+            info.totalWithdrawn,
+            info.realizedPnl,
+            info.positionCount,
+            hasOpenPosition,
+            unrealizedPnl
+        );
+    }
+    
+    function getProtocolStats() external view returns (
+        uint256 totalDepositAmount,
+        uint256 totalOpenInterestAmount,
+        uint256 totalPositionCount,
+        address collateralTokenAddress,
+        bool isPaused
+    ) {
+        return (
+            totalDeposits,
+            totalOpenInterest,
+            totalPositions,
+            address(collateralToken),
+            paused
+        );
+    }
+    
+    function getMarginRequirement(uint256 notional) external pure returns (uint256) {
+        return (notional * INITIAL_MARGIN_RATIO) / PRECISION;
+    }
+    
+    function canOpenPosition(address user, uint256 notional) external view returns (bool) {
+        if (paused || positions[user].notional > 0) {
+            return false;
+        }
+        
+        uint256 requiredMargin = (notional * INITIAL_MARGIN_RATIO) / PRECISION;
+        return balances[user] >= requiredMargin;
+    }
+}
+</file>
+
+</files>

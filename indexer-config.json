@@ -1,0 +1,11 @@
+{
+  "generated": "2025-05-30T16:40:27.367Z",
+  "network": "arbitrum",
+  "contracts": {
+    "MockUSDC": "0xe2696990894452AbE9ce45ba557979c2cbc6B3dd",
+    "RatioOracle": "0x73521ACe086cDB7C4dd2cb6D9667582EC07F628f",
+    "SimplePerpV2": "0x99d45f0d21D135D0947F641Ae4C10E00DF820244"
+  },
+  "latestBlock": 342159047,
+  "message": "Use contract addresses above to index events from block 342158047 to 342159047"
+}

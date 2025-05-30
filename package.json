@@ -12,7 +12,10 @@
     "deploy:dryrun": "cd contracts && forge script script/DeployAndVerify.s.sol --rpc-url $ARBITRUM_RPC_URL",
     "deploy:verify": "cd contracts && forge script script/DeployAndVerify.s.sol --rpc-url $ARBITRUM_RPC_URL --broadcast --verify --etherscan-api-key $ARBISCAN_API_KEY",
     "demo": "npx ts-node scripts/demo.ts",
-    "test-deployed": "npx ts-node scripts/test-deployed.ts"
+    "test-deployed": "node scripts/test-deployed.js",
+    "generate-data": "node scripts/generate-test-data.js",
+    "generate-data:quick": "node scripts/generate-test-data.js 5",
+    "generate-data:long": "node scripts/generate-test-data.js 30"
   },
   "keywords": [],
   "author": "",

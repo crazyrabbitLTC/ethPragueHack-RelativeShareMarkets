@@ -6,9 +6,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "setup-keys": "npx ts-node scripts/setup-keys.ts",
     "fund-wallets": "npx ts-node scripts/fund-wallets.ts",
+    "fund-wallets:minimal": "npx ts-node scripts/fund-wallets-minimal.ts",
     "return-funds": "npx ts-node scripts/return-funds.ts",
-    "deploy": "cd contracts && forge script script/Deploy.s.sol --rpc-url $ARBITRUM_RPC_URL --broadcast",
-    "deploy:verify": "cd contracts && forge script script/Deploy.s.sol --rpc-url $ARBITRUM_RPC_URL --broadcast --verify",
+    "deploy": "cd contracts && forge script script/DeployAndVerify.s.sol --rpc-url $ARBITRUM_RPC_URL --broadcast",
+    "deploy:dryrun": "cd contracts && forge script script/DeployAndVerify.s.sol --rpc-url $ARBITRUM_RPC_URL",
+    "deploy:verify": "cd contracts && forge script script/DeployAndVerify.s.sol --rpc-url $ARBITRUM_RPC_URL --broadcast --verify --etherscan-api-key $ARBISCAN_API_KEY",
     "demo": "npx ts-node scripts/demo.ts"
   },
   "keywords": [],

@@ -1,0 +1,17 @@
+{
+  "network": "arbitrum",
+  "chainId": 42161,
+  "deployer": "0x35CcD2a059636C1AD6b0851c793c01982C312e34",
+  "deploymentTimestamp": "2024-11-30",
+  "contracts": {
+    "MockUSDC": "0xe2696990894452AbE9ce45ba557979c2cbc6B3dd",
+    "RatioOracle": "0x73521ACe086cDB7C4dd2cb6D9667582EC07F628f",
+    "SimplePerpV2": "0x99d45f0d21D135D0947F641Ae4C10E00DF820244"
+  },
+  "verified": false,
+  "arbiscanLinks": {
+    "MockUSDC": "https://arbiscan.io/address/0xe2696990894452AbE9ce45ba557979c2cbc6B3dd",
+    "RatioOracle": "https://arbiscan.io/address/0x73521ACe086cDB7C4dd2cb6D9667582EC07F628f",
+    "SimplePerpV2": "https://arbiscan.io/address/0x99d45f0d21D135D0947F641Ae4C10E00DF820244"
+  }
+}

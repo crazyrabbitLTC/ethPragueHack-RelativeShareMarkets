@@ -96,8 +96,14 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
     };
 
     // Clear existing series
-    marketSeriesRef.current.forEach(series => {
-      chart.removeSeries(series);
+    marketSeriesRef.current.forEach((series, symbol) => {
+      try {
+        if (series && chart) {
+          chart.removeSeries(series);
+        }
+      } catch (err) {
+        console.warn(`Failed to remove series for ${symbol}:`, err);
+      }
     });
     marketSeriesRef.current.clear();
 
@@ -122,14 +128,6 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
 
         // Ensure data is properly sorted and deduplicated
         const sortedData = [...tokenData.data].sort((a, b) => (a.time as number) - (b.time as number));
-        
-        // Log data to debug
-        console.log(`Setting data for ${tokenData.symbol}:`, {
-          dataLength: sortedData.length,
-          firstTime: sortedData[0]?.time,
-          lastTime: sortedData[sortedData.length - 1]?.time,
-          hasDuplicates: sortedData.some((item, i) => i > 0 && item.time === sortedData[i - 1].time)
-        });
         
         series.setData(sortedData);
         marketSeriesRef.current.set(tokenData.symbol, series);
@@ -275,12 +273,6 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
             seenTimes.add(time);
             dedupedExposureData.push(point);
           }
-        });
-        
-        console.log('Setting exposure data:', {
-          originalLength: exposureData.length,
-          dedupedLength: dedupedExposureData.length,
-          removedDuplicates: exposureData.length - dedupedExposureData.length
         });
         
         exposureSeries.setData(dedupedExposureData);

@@ -8,6 +8,7 @@ import { OrderForm } from "./components/order-form"
 import { PositionCard, type Position as PositionType } from "./components/position-card"
 import { PositionCardV2 } from "./components/position-card-v2"
 import { ToastStack } from "./components/toast-stack"
+import { AdminTools } from "./components/admin-tools"
 import { TradingPairSelector } from "./components/trading-pair-selector"
 import { TradingViewWithPositions } from "./components/chart/TradingViewWithPositions"
 import { TraderSelector } from "./components/trader-selector"
@@ -245,6 +246,11 @@ export default function TradingInterface() {
             basketTokens={selectedTokens}
           />
           <PositionCardV2 />
+        </div>
+        
+        {/* Admin Tools - Demo Only */}
+        <div className="mt-6">
+          <AdminTools />
         </div>
       </main>
 

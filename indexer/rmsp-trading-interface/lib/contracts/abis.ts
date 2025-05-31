@@ -12,20 +12,14 @@ export const SimplePerpV2ABI = [
     "inputs": [{ "name": "user", "type": "address" }],
     "name": "positions",
     "outputs": [
+      { "name": "baseToken", "type": "string" },
+      { "name": "quoteToken", "type": "string" },
       { "name": "notional", "type": "uint256" },
-      { "name": "collateral", "type": "uint256" },
       { "name": "isLong", "type": "bool" },
-      { "name": "entryPrice", "type": "uint256" },
-      { "name": "entryRatio", "type": "uint256" },
-      { "name": "openTimestamp", "type": "uint256" }
+      { "name": "entryShare", "type": "uint256" },
+      { "name": "openedAt", "type": "uint256" },
+      { "name": "lastUpdated", "type": "uint256" }
     ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getCurrentRatio",
-    "outputs": [{ "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -39,6 +33,8 @@ export const SimplePerpV2ABI = [
   // Write functions
   {
     "inputs": [
+      { "name": "baseToken", "type": "string" },
+      { "name": "quoteToken", "type": "string" },
       { "name": "notional", "type": "uint256" },
       { "name": "isLong", "type": "bool" }
     ],
@@ -124,7 +120,10 @@ export const MockUSDCABI = [
     "type": "function"
   },
   {
-    "inputs": [{ "name": "amount", "type": "uint256" }],
+    "inputs": [
+      { "name": "to", "type": "address" },
+      { "name": "amount", "type": "uint256" }
+    ],
     "name": "mint",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -142,8 +141,18 @@ export const MockUSDCABI = [
 // RatioOracle ABI - for reading current ratio
 export const RatioOracleABI = [
   {
-    "inputs": [],
-    "name": "currentRatio",
+    "inputs": [
+      { "name": "baseToken", "type": "string" },
+      { "name": "quoteToken", "type": "string" }
+    ],
+    "name": "getRatioShare",
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "name": "token", "type": "string" }],
+    "name": "getPrice",
     "outputs": [{ "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"

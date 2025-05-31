@@ -11,9 +11,9 @@ import { useUserPosition, useCurrentRatio, useTrading, useUSDC } from '@/lib/hoo
 import { formatUnits } from 'viem'
 
 export function PositionCardV2() {
-  const { isConnected } = useAccount();
-  const { position, isLoading: positionLoading } = useUserPosition();
-  const { ratio, ratioPercent } = useCurrentRatio();
+  const { isConnected, address } = useAccount();
+  const { position, isLoading: positionLoading, refetch: refetchPosition } = useUserPosition();
+  const { ratio, ratioPercent } = useCurrentRatio(position.baseToken || "ETH", position.quoteToken || "BTC");
   const { closePosition, addCollateral, isClosing, isAddingCollateral } = useTrading();
   const { balanceFormatted } = useUSDC();
   
@@ -24,9 +24,26 @@ export function PositionCardV2() {
     if (!position.hasPosition) return null;
 
     const notionalFormatted = parseFloat(formatUnits(position.notional, 6));
-    const collateralFormatted = parseFloat(formatUnits(position.collateral, 6));
-    const entryRatioPercent = Number(position.entryRatio) / 1e16;
-    const currentRatioPercent = ratioPercent;
+    // Calculate collateral from notional (30% margin requirement)
+    const collateralFormatted = notionalFormatted * 0.3;
+    const entryRatioPercent = Number(position.entryShare) / 1e18;
+    const currentRatioPercent = ratioPercent || 0;
+    
+    // Handle edge cases
+    if (notionalFormatted === 0 || collateralFormatted === 0 || entryRatioPercent === 0) {
+      return {
+        notionalFormatted,
+        collateralFormatted,
+        entryRatioPercent,
+        currentRatioPercent,
+        pnlUsd: 0,
+        pnlPercent: 0,
+        marginUtilization: 0,
+        liquidationDistance: 100,
+        isPositivePnl: true,
+        isNearLiquidation: false,
+      };
+    }
     
     // Calculate PnL based on ratio change
     const ratioChange = position.isLong 
@@ -114,13 +131,22 @@ export function PositionCardV2() {
     <div className="bg-gray-900/30 rounded-xl border border-gray-800 p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Active Position</h3>
-        <div
-          className={`flex items-center space-x-2 px-3 py-1 rounded-lg ${
-            position.isLong ? "bg-green-900/30 text-green-400" : "bg-red-900/30 text-red-400"
-          }`}
-        >
-          {position.isLong ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-          <span className="font-medium capitalize">{position.isLong ? 'Long' : 'Short'}</span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => refetchPosition()}
+            className="text-xs text-gray-400 hover:text-gray-300 p-1"
+            title="Refresh position"
+          >
+            🔄
+          </button>
+          <div
+            className={`flex items-center space-x-2 px-3 py-1 rounded-lg ${
+              position.isLong ? "bg-green-900/30 text-green-400" : "bg-red-900/30 text-red-400"
+            }`}
+          >
+            {position.isLong ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+            <span className="font-medium capitalize">{position.isLong ? 'Long' : 'Short'}</span>
+          </div>
         </div>
       </div>
       
@@ -137,12 +163,30 @@ export function PositionCardV2() {
 
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-gray-400">Notional:</span>
-          <span>${positionMetrics.notionalFormatted.toFixed(2)}</span>
+          <span className="text-gray-400">Position Size:</span>
+          <span className="font-medium">${positionMetrics.notionalFormatted.toFixed(2)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-400">Collateral:</span>
-          <span>${positionMetrics.collateralFormatted.toFixed(2)}</span>
+          <span className="text-gray-400">Collateral (Margin):</span>
+          <span className="font-medium">${positionMetrics.collateralFormatted.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-gray-400">Leverage:</span>
+          <span className="font-medium">
+            {positionMetrics.collateralFormatted > 0 
+              ? (positionMetrics.notionalFormatted / positionMetrics.collateralFormatted).toFixed(1) 
+              : '0.0'}×
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-gray-400">Entry Price (ETH Share):</span>
+          <span className="font-medium">{positionMetrics.entryRatioPercent.toFixed(2)}%</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-gray-400">Opened At:</span>
+          <span className="font-medium text-xs">
+            {new Date(Number(position.openTimestamp) * 1000).toLocaleString()}
+          </span>
         </div>
       </div>
 
@@ -215,6 +259,21 @@ export function PositionCardV2() {
       >
         {isClosing ? "Closing Position..." : "Close Position"}
       </Button>
+      
+      {/* Debug Info - Remove in production */}
+      <details className="mt-4">
+        <summary className="text-xs text-gray-500 cursor-pointer">Debug Info</summary>
+        <div className="mt-2 p-2 bg-gray-900/50 rounded text-xs text-gray-400 space-y-1">
+          <div>Wallet: {address}</div>
+          <div>Entry Ratio Raw: {position.entryRatio.toString()}</div>
+          <div>Current Ratio: {ratio.toString()}</div>
+          <div>Notional: {position.notional.toString()} ({formatUnits(position.notional, 6)} USDC)</div>
+          <div>Collateral: {position.collateral.toString()} ({formatUnits(position.collateral, 6)} USDC)</div>
+          <div>Is Long: {position.isLong.toString()}</div>
+          <div>Entry Timestamp: {position.openTimestamp.toString()}</div>
+          <div>PnL Calc: {position.isLong ? 'Long' : 'Short'} - Entry: {positionMetrics.entryRatioPercent.toFixed(4)}% → Current: {positionMetrics.currentRatioPercent.toFixed(4)}%</div>
+        </div>
+      </details>
     </div>
   );
 }

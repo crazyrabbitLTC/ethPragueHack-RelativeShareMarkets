@@ -40,7 +40,9 @@ export function OrderForm({ baseToken, basketTokens }: OrderFormProps) {
 
   const handleSubmit = async () => {
     if (!notional || notionalValue <= 0) return;
-    await openPosition(notional, side === 'long');
+    // Get the basket tokens as a comma-separated string
+    const quoteTokens = basketTokens.map(t => t.symbol).join(',');
+    await openPosition(notional, side === 'long', baseToken, quoteTokens);
   };
 
   const getButtonText = () => {
@@ -56,20 +58,19 @@ export function OrderForm({ baseToken, basketTokens }: OrderFormProps) {
 
   return (
     <div className="bg-gray-900/30 rounded-xl border border-gray-800 p-6 space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-2">
         <h3 className="text-lg font-semibold">Open Position</h3>
         {isConnected && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 bg-gray-800/50 rounded-lg px-3 py-1.5">
             <span className="text-sm text-gray-400">
-              Balance: <span className="text-white font-medium">{parseFloat(balanceFormatted).toFixed(2)} USDC</span>
+              Balance: <span className="text-white font-medium">${parseFloat(balanceFormatted).toFixed(2)}</span>
             </span>
             {balance === 0n && (
               <Button
                 size="sm"
-                variant="outline"
                 onClick={airdrop}
                 disabled={isAirdropping}
-                className="text-xs"
+                className="text-xs bg-blue-600 hover:bg-blue-700 text-white border-blue-500"
               >
                 {isAirdropping ? "Airdropping..." : "Get Test USDC"}
               </Button>
@@ -77,10 +78,9 @@ export function OrderForm({ baseToken, basketTokens }: OrderFormProps) {
             {needsApproval && balance > 0n && (
               <Button
                 size="sm"
-                variant="outline"
                 onClick={approveMax}
                 disabled={isApproving}
-                className="text-xs"
+                className="text-xs bg-yellow-600 hover:bg-yellow-700 text-white border-yellow-500"
               >
                 {isApproving ? "Approving..." : "Approve USDC"}
               </Button>
@@ -120,25 +120,71 @@ export function OrderForm({ baseToken, basketTokens }: OrderFormProps) {
       <div className="space-y-3">
         <div className="flex justify-between items-center">
           <Label className="text-gray-300">Leverage</Label>
-          <span className="text-lg font-bold text-cyan-400">{leverage[0]}×</span>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-bold text-cyan-400">{leverage[0].toFixed(1)}×</span>
+            <span className="text-sm text-gray-400">
+              (Margin: ${(notionalValue / leverage[0]).toFixed(2)})
+            </span>
+          </div>
         </div>
-        <Slider value={leverage} onValueChange={setLeverage} max={3} min={1} step={0.1} className="w-full" />
-        <div className="flex justify-between text-xs text-gray-500">
-          <span>1×</span>
-          <span>2×</span>
-          <span>3×</span>
+        <Slider 
+          value={leverage} 
+          onValueChange={setLeverage} 
+          max={3} 
+          min={1} 
+          step={0.5} 
+          className="w-full" 
+        />
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-400">Conservative</span>
+          <span className="text-gray-400">Moderate</span>
+          <span className="text-gray-400">Aggressive</span>
+        </div>
+        <div className="grid grid-cols-5 gap-1">
+          {[1, 1.5, 2, 2.5, 3].map((lev) => (
+            <button
+              key={lev}
+              onClick={() => setLeverage([lev])}
+              className={`p-2 text-sm rounded border transition-all ${
+                leverage[0] === lev 
+                  ? 'bg-cyan-600 text-white border-cyan-500' 
+                  : 'bg-gray-800 text-gray-400 border-gray-700 hover:border-gray-600'
+              }`}
+            >
+              {lev}×
+            </button>
+          ))}
         </div>
       </div>
       {notionalValue > 0 && (
         <div className="space-y-2 p-4 bg-gray-800/30 rounded-lg border border-gray-700">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-400">Initial Margin:</span>
-            <span className="font-medium">${initialMargin.toFixed(2)}</span>
+            <span className="text-gray-400">Position Size:</span>
+            <span className="font-medium">${notionalValue.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-400">Est. Liquidation:</span>
-            <span className="font-medium text-red-400">~{((1 - 1/leverageValue) * 100).toFixed(1)}%</span>
+            <span className="text-gray-400">Required Margin:</span>
+            <span className="font-medium text-cyan-400">${initialMargin.toFixed(2)}</span>
           </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-400">Liquidation at:</span>
+            <span className="font-medium text-red-400">~{((1 - 1/leverageValue) * 100).toFixed(1)}% loss</span>
+          </div>
+          <div className="mt-2 p-2 bg-gray-900/50 rounded text-xs text-gray-400">
+            💡 Leverage {leverageValue}× means you control ${notionalValue.toFixed(0)} worth of position with just ${initialMargin.toFixed(0)} margin
+          </div>
+          {hasInsufficientBalance && (
+            <div className="text-xs text-yellow-400 mt-2">
+              ⚠️ Insufficient balance. You need ${(notionalValue - parseFloat(balanceFormatted)).toFixed(2)} more USDC.
+            </div>
+          )}
+        </div>
+      )}
+      {position.hasPosition && (
+        <div className="p-3 bg-yellow-900/20 border border-yellow-500/30 rounded-lg">
+          <p className="text-sm text-yellow-400">
+            ⚠️ You already have an open position. Please close it first before opening a new one.
+          </p>
         </div>
       )}
       <Button

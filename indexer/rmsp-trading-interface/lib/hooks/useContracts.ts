@@ -1,17 +1,18 @@
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { parseUnits, formatUnits } from 'viem';
-import { CONTRACTS, SimplePerpV2ABI, MockUSDCABI } from '@/lib/contracts/abis';
+import { CONTRACTS, SimplePerpV2ABI, MockUSDCABI, RatioOracleABI } from '@/lib/contracts/abis';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 // Position data structure
 export interface OnChainPosition {
+  baseToken: string;
+  quoteToken: string;
   notional: bigint;
-  collateral: bigint;
   isLong: boolean;
-  entryPrice: bigint;
-  entryRatio: bigint;
-  openTimestamp: bigint;
+  entryShare: bigint;
+  openedAt: bigint;
+  lastUpdated: bigint;
   hasPosition: boolean;
 }
 
@@ -31,32 +32,42 @@ export function useUserPosition() {
   });
 
   const position: OnChainPosition = data ? {
-    notional: data[0],
-    collateral: data[1],
-    isLong: data[2],
-    entryPrice: data[3],
-    entryRatio: data[4],
-    openTimestamp: data[5],
-    hasPosition: data[0] > 0n,
+    baseToken: data[0] || '',
+    quoteToken: data[1] || '',
+    notional: data[2] || 0n,
+    isLong: data[3] || false,
+    entryShare: data[4] || 0n,
+    openedAt: data[5] || 0n,
+    lastUpdated: data[6] || 0n,
+    hasPosition: (data[2] || 0n) > 0n, // Check notional > 0
   } : {
+    baseToken: '',
+    quoteToken: '',
     notional: 0n,
-    collateral: 0n,
     isLong: false,
-    entryPrice: 0n,
-    entryRatio: 0n,
-    openTimestamp: 0n,
+    entryShare: 0n,
+    openedAt: 0n,
+    lastUpdated: 0n,
     hasPosition: false,
   };
+  
+  console.log('Position data:', {
+    address,
+    raw: data,
+    parsed: position,
+    hasPosition: position.hasPosition
+  });
 
   return { position, isLoading, error, refetch };
 }
 
 // Hook for reading current ratio
-export function useCurrentRatio() {
+export function useCurrentRatio(baseToken: string = "ETH", quoteToken: string = "BTC") {
   const { data, isLoading, error } = useReadContract({
-    address: CONTRACTS.perp,
-    abi: SimplePerpV2ABI,
-    functionName: 'getCurrentRatio',
+    address: CONTRACTS.oracle,
+    abi: RatioOracleABI,
+    functionName: 'getRatioShare',
+    args: [baseToken, quoteToken],
     query: {
       refetchInterval: 10000, // Refetch every 10 seconds
     }
@@ -64,7 +75,7 @@ export function useCurrentRatio() {
 
   return { 
     ratio: data || 0n, 
-    ratioPercent: data ? Number(data) / 1e16 : 0, // Convert to percentage
+    ratioPercent: data ? Number(data) / 1e16 : 0, // Convert to percentage (1e18 to percentage)
     isLoading, 
     error 
   };
@@ -129,8 +140,8 @@ export function useUSDC() {
   useEffect(() => {
     if (isMintSuccess) {
       toast({
-        title: "USDC Airdrop Successful!",
-        description: "10,000 USDC has been minted to your wallet",
+        title: "USDC Airdrop Successful! 💰",
+        description: "$1,000,000 USDC has been minted to your wallet",
       });
       refetchBalance();
     }
@@ -148,13 +159,22 @@ export function useUSDC() {
   }, [isApproveSuccess, refetchAllowance, toast]);
 
   const airdrop = async () => {
+    if (!address) {
+      toast({
+        title: "Wallet Not Connected",
+        description: "Please connect your wallet first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
-      const amount = parseUnits('10000', 6); // 10,000 USDC (6 decimals)
+      const amount = parseUnits('1000000', 6); // 1,000,000 USDC (6 decimals)
       mint({
         address: CONTRACTS.usdc,
         abi: MockUSDCABI,
         functionName: 'mint',
-        args: [amount],
+        args: [address, amount], // Pass the user's address and amount
       });
     } catch (error) {
       console.error('Airdrop error:', error);
@@ -204,6 +224,7 @@ export function useTrading() {
   const { toast } = useToast();
   const { refetch: refetchPosition } = useUserPosition();
   const { refetchBalance, refetchAllowance } = useUSDC();
+  const [shouldUpdateOracle, setShouldUpdateOracle] = useState(true); // Toggle for auto-update
   
   // Open position
   const { 
@@ -276,14 +297,14 @@ export function useTrading() {
     }
   }, [isAddCollatSuccess, refetchPosition, refetchBalance, toast]);
 
-  const open = async (notionalUSDC: string, isLong: boolean) => {
+  const open = async (notionalUSDC: string, isLong: boolean, baseToken: string = "ETH", quoteToken: string = "BTC,SOL,AVAX") => {
     try {
       const notional = parseUnits(notionalUSDC, 6); // Convert to 6 decimal USDC
       openPosition({
         address: CONTRACTS.perp,
         abi: SimplePerpV2ABI,
         functionName: 'openPosition',
-        args: [notional, isLong],
+        args: [baseToken, quoteToken, notional, isLong],
       });
     } catch (error) {
       console.error('Open position error:', error);

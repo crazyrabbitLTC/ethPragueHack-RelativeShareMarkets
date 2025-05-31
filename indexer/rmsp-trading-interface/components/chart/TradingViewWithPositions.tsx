@@ -197,7 +197,12 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
       // Set all markers at once for the ETH series
       const ethSeries = marketSeriesRef.current.get('ETH');
       if (ethSeries && ethMarkers.length > 0) {
-        ethSeries.setMarkers(ethMarkers);
+        // Check if setMarkers exists on the series
+        if (typeof ethSeries.setMarkers === 'function') {
+          ethSeries.setMarkers(ethMarkers);
+        } else {
+          console.warn('setMarkers is not available on this series type');
+        }
       }
 
       // Add exposure area (shaded regions for open positions)

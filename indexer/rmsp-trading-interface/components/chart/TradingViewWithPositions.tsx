@@ -99,13 +99,15 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
 
     // Add market data series
     if (marketData.length > 0) {
-      const tokens = Object.keys(marketData[0]).filter(key => key !== 'timestamp');
-      
-      tokens.forEach((token) => {
+      // marketData is TokenChartData[] format
+      marketData.forEach((tokenData) => {
+        // Only show ETH and BTC
+        if (tokenData.symbol !== 'ETH' && tokenData.symbol !== 'BTC') return;
+        
         const series = chart.addLineSeries({
-          color: tokenColors[token] || '#888888',
+          color: tokenColors[tokenData.symbol] || '#888888',
           lineWidth: 2,
-          title: `${token} Share`,
+          title: `${tokenData.symbol} Share`,
           priceScaleId: 'right',
           priceFormat: {
             type: 'custom',
@@ -113,13 +115,8 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
           },
         });
 
-        const data: ChartPoint[] = marketData.map(item => ({
-          time: item.timestamp as Time,
-          value: item[token] || 0,
-        }));
-
-        series.setData(data);
-        marketSeriesRef.current.set(token, series);
+        series.setData(tokenData.data);
+        marketSeriesRef.current.set(tokenData.symbol, series);
       });
     }
 

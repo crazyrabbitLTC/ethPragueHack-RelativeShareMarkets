@@ -22,9 +22,9 @@ import { useLivePricesContext } from "./lib/contexts/LivePricesContext"
 export default function TradingInterface() {
   const [isConnected, setIsConnected] = useState(true)
   const [showAsAreaChart, setShowAsAreaChart] = useState(false)
-  const [useMockData, setUseMockData] = useState(false) // Switch to real data by default
+  const [useMockData, setUseMockData] = useState(false) // Use real indexer data by default
   const [selectedTrader, setSelectedTrader] = useState<string | undefined>(undefined)
-  const [useEnhancedChart, setUseEnhancedChart] = useState(true) // Toggle between chart types
+  const [useEnhancedChart, setUseEnhancedChart] = useState(false) // Start with simple chart by default
   
   // Fetch real block number from indexer
   const { latestBlockNumber } = useLatestPrices(1, 5000); // Poll every 5 seconds
@@ -137,16 +137,7 @@ export default function TradingInterface() {
         </div>
 
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <TradingPairSelector />
-            <div className="w-64">
-              <TraderSelector
-                selectedTrader={selectedTrader}
-                onChange={setSelectedTrader}
-                placeholder="All traders"
-              />
-            </div>
-          </div>
+          <TradingPairSelector />
           <div className="w-full md:w-auto">
             <BasketChips
               baseToken="ETH"
@@ -185,6 +176,15 @@ export default function TradingInterface() {
                 >
                   {showAsAreaChart ? 'Show Lines' : 'Show Area'}
                 </button>
+              )}
+              {useEnhancedChart && (
+                <div className="w-48">
+                  <TraderSelector
+                    selectedTrader={selectedTrader}
+                    onChange={setSelectedTrader}
+                    placeholder="All traders"
+                  />
+                </div>
               )}
             </div>
             {selectedTrader && (

@@ -8,15 +8,16 @@ import { OrderForm } from "./components/order-form"
 import { PositionCard, type Position as PositionType } from "./components/position-card"
 import { ToastStack } from "./components/toast-stack"
 import { TradingPairSelector } from "./components/trading-pair-selector"
-import { TradingViewChart } from "./components/chart/TradingViewChart"
+import { RelativeSharesChart } from "./components/chart/RelativeSharesChart"
 import { mockTokensData, mockPositionData } from "./data/mock-data"
 import { useLatestPrices } from "./lib/hooks/usePrices"
 import { useAllPositions, transformPositionForUI } from "./lib/hooks/usePositions"
-import { useChartData } from "./lib/hooks/useChartData";
+import { useRelativeSharesChartData } from "./lib/hooks/useRelativeSharesChartData"
 // import { useToasts } from "./hooks/useToasts"; // If toasts are managed globally or triggered here
 
 export default function TradingInterface() {
   const [isConnected, setIsConnected] = useState(true)
+  const [showAsAreaChart, setShowAsAreaChart] = useState(false)
   
   // Fetch real block number from indexer
   const { latestBlockNumber } = useLatestPrices(1, 5000); // Poll every 5 seconds
@@ -24,7 +25,12 @@ export default function TradingInterface() {
 
   // Fetch real positions data
   const { positions, stats: positionStats } = useAllPositions(10);
-  const { data: chartData, loading: chartLoading, error: chartError } = useChartData();
+  
+  // Get chart data for all tokens
+  const { chartData, loading: chartLoading, error: chartError } = useRelativeSharesChartData(
+    mockTokensData,
+    true // Use mock data
+  );
   
   // Use the first open position for display, or mock data if none
   const firstOpenPosition = positions.find(p => p.status === 'open');
@@ -66,11 +72,22 @@ export default function TradingInterface() {
         {chartLoading && <div className="text-center py-10">Loading chart data...</div>}
         {chartError && <div className="text-center py-10 text-red-500">Error loading chart: {chartError.message}</div>}
         {!chartLoading && !chartError && chartData.length > 0 && (
-          <TradingViewChart 
-            data={chartData} 
-            baseToken="ETH" 
-            currentShare={displayPosition.currentShare} 
-          />
+          <div className="space-y-2">
+            {/* Chart type toggle */}
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowAsAreaChart(!showAsAreaChart)}
+                className="px-3 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-700 transition-colors"
+              >
+                {showAsAreaChart ? 'Show Lines' : 'Show Area'}
+              </button>
+            </div>
+            <RelativeSharesChart 
+              data={chartData}
+              height={400}
+              showAsArea={showAsAreaChart}
+            />
+          </div>
         )}
         {/* Fallback if chart data is empty and not loading/erroring */}
         {!chartLoading && !chartError && chartData.length === 0 && (

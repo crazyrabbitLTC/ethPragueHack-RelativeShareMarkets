@@ -1,7 +1,19 @@
 'use client';
 
 import React, { useEffect, useRef, memo } from 'react';
-import { createChart, ColorType, IChartApi, ISeriesApi, LineData, Time, LineSeriesPartialOptions } from 'lightweight-charts';
+import { 
+  createChart, 
+  ColorType, 
+  IChartApi, 
+  ISeriesApi, 
+  LineData, 
+  Time, 
+  LineSeries,
+  AreaSeries,
+  LineSeriesOptions,
+  AreaSeriesOptions,
+  DeepPartial
+} from 'lightweight-charts';
 
 export interface TradingViewChartProps {
   data: LineData[];
@@ -20,7 +32,7 @@ const TradingViewChartComponent: React.FC<TradingViewChartProps> = ({
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
-  const seriesRef = useRef<ISeriesApi<typeof chartType> | null>(null); // Use typeof chartType for generic series
+  const seriesRef = useRef<ISeriesApi<'Line'> | ISeriesApi<'Area'> | null>(null);
 
   useEffect(() => {
     if (!chartContainerRef.current || !chartContainerRef.current.isConnected) return;
@@ -53,26 +65,31 @@ const TradingViewChartComponent: React.FC<TradingViewChartProps> = ({
         secondsVisible: false,
       },
     });
+    
     chartRef.current = chart;
 
     let series;
     if (chartType === 'Line') {
-      series = chart.addLineSeries({
+      const lineOptions: DeepPartial<LineSeriesOptions> = {
         color: lineColor,
         lineWidth: 2,
-      });
+      };
+      series = chart.addSeries(LineSeries, lineOptions);
     } else if (chartType === 'Area') {
-      series = chart.addAreaSeries({
+      const areaOptions: DeepPartial<AreaSeriesOptions> = {
         lineColor: lineColor,
         topColor: 'rgba(41, 98, 255, 0.4)', // Example area color
         bottomColor: 'rgba(41, 98, 255, 0)',
         lineWidth: 2,
-      });
+      };
+      series = chart.addSeries(AreaSeries, areaOptions);
     }
-    seriesRef.current = series as ISeriesApi<typeof chartType>; // Cast to specific type
-    seriesRef.current.setData(data);
-
-    chart.timeScale().fitContent();
+    
+    if (series) {
+      seriesRef.current = series;
+      series.setData(data);
+      chart.timeScale().fitContent();
+    }
 
     const handleResize = () => {
       if (chartContainerRef.current && chartRef.current) {

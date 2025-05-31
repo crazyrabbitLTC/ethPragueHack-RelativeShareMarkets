@@ -150,13 +150,11 @@ export const GET_ACTIVE_POSITIONS_COUNT = gql`
 
 // Get PositionUpdates for chart data
 export const GET_POSITION_UPDATES_FOR_CHART = gql`
-  query GetPositionUpdatesForChart($limit: Int, $offset: Int, $positionId: String) {
+  query GetPositionUpdatesForChart($limit: Int) {
     positionUpdates(
       limit: $limit
-      offset: $offset
       orderBy: "timestamp"
       orderDirection: "asc"
-      where: { positionId: $positionId }
     ) {
       items {
         id

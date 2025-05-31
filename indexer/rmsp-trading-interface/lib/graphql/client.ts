@@ -2,7 +2,7 @@ import { ApolloClient, InMemoryCache, NormalizedCacheObject } from '@apollo/clie
 
 // Apollo Client instance for connecting to the Ponder indexer
 export const apolloClient: ApolloClient<NormalizedCacheObject> = new ApolloClient({
-  uri: 'http://localhost:42070/graphql',
+  uri: 'http://localhost:42069/graphql',
   cache: new InMemoryCache({
     typePolicies: {
       Query: {

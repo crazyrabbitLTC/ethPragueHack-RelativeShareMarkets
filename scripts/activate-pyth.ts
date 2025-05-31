@@ -70,7 +70,7 @@ async function main() {
         console.log("  ETH Share:", (Number(ratio) / 1e18 * 100).toFixed(2) + "%");
         
       } catch (error) {
-        console.log("⚠️  Prices may be stale or unavailable:", error.message);
+        console.log("⚠️  Prices may be stale or unavailable:", (error as Error).message);
       }
       
       return;
@@ -109,7 +109,7 @@ async function main() {
       
     } catch (error: any) {
       console.log("⚠️  Price retrieval failed (likely stale prices):");
-      console.log("   Error:", error.message);
+      console.log("   Error:", (error as Error).message);
       console.log("\n💡 To fix this:");
       console.log("   1. Prices may be older than 5 minutes (MAX_PRICE_AGE)");
       console.log("   2. You need to call updatePriceFeeds() with fresh Pyth data");
@@ -123,7 +123,7 @@ async function main() {
     console.log("   3. Indexer will track real market ratios");
     
   } catch (error: any) {
-    console.error("❌ Error:", error.message);
+    console.error("❌ Error:", (error as Error).message);
     if (error.code === 'CALL_EXCEPTION') {
       console.log("💡 This might be due to:");
       console.log("   - Network connectivity issues");

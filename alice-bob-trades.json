@@ -1,0 +1,1100 @@
+{
+  "stats": {
+    "generated": "2025-05-30T19:41:29.044Z",
+    "network": "arbitrum",
+    "contracts": {
+      "MockUSDC": "0xe2696990894452AbE9ce45ba557979c2cbc6B3dd",
+      "RatioOracle": "0x73521ACe086cDB7C4dd2cb6D9667582EC07F628f",
+      "SimplePerpV2": "0x99d45f0d21D135D0947F641Ae4C10E00DF820244"
+    },
+    "summary": {
+      "rounds": 50,
+      "totalEvents": 50,
+      "totalTrades": 25,
+      "priceUpdates": 50
+    },
+    "traders": {
+      "alice": {
+        "address": "0xc4F37F26DaaF0715A2b9e928A846CaE96Bf941D1",
+        "startBalance": "1000.72739",
+        "finalBalance": "1000.433097",
+        "pnl": "-0.294293"
+      },
+      "bob": {
+        "address": "0xA34dC124952EdAF7229AAe05DF0955231a8a9e2B",
+        "startBalance": "996.121587",
+        "finalBalance": "999.43251",
+        "pnl": "3.310923"
+      }
+    },
+    "priceRange": {
+      "eth": {
+        "start": 3000,
+        "end": "2559.96"
+      },
+      "btc": {
+        "start": 60000,
+        "end": "57248.72"
+      }
+    },
+    "events": [
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:39:46.542Z",
+        "round": 31,
+        "ethPrice": "11630.41",
+        "btcPrice": "119976.58",
+        "ratio": "8.5735488395451642%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:39:54.132Z",
+        "round": 32,
+        "ethPrice": "10960.33",
+        "btcPrice": "116520.39",
+        "ratio": "8.3706948668745258%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:39:57.171Z",
+        "round": 33,
+        "ethPrice": "10118.34",
+        "btcPrice": "112044.74",
+        "ratio": "7.9899241136951381%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:40:04.221Z",
+        "round": 34,
+        "ethPrice": "9207.96",
+        "btcPrice": "107004.24",
+        "ratio": "7.5940258611634763%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:40:07.462Z",
+        "round": 35,
+        "ethPrice": "8303.41",
+        "btcPrice": "101748.41",
+        "ratio": "7.2010908966997877%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:40:14.977Z",
+        "round": 36,
+        "ethPrice": "7487.47",
+        "btcPrice": "96749.22",
+        "ratio": "6.8544035664672467%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:40:18.250Z",
+        "round": 37,
+        "ethPrice": "6746.71",
+        "btcPrice": "91963.40",
+        "ratio": "6.5188206884126465%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:40:24.740Z",
+        "round": 38,
+        "ethPrice": "6120.11",
+        "btcPrice": "87692.83",
+        "ratio": "6.2396929299528816%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:40:28.026Z",
+        "round": 39,
+        "ethPrice": "5469.67",
+        "btcPrice": "83032.87",
+        "ratio": "5.8711072724883714%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:40:35.511Z",
+        "round": 40,
+        "ethPrice": "4908.12",
+        "btcPrice": "78770.53",
+        "ratio": "5.5811502594604974%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:40:39.788Z",
+        "round": 41,
+        "ethPrice": "4388.68",
+        "btcPrice": "74602.30",
+        "ratio": "5.2774456056365478%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:40:46.546Z",
+        "round": 42,
+        "ethPrice": "4013.47",
+        "btcPrice": "71413.26",
+        "ratio": "5.1051766224648651%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:40:49.719Z",
+        "round": 43,
+        "ethPrice": "3643.89",
+        "btcPrice": "68125.15",
+        "ratio": "4.8548160087757341%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:40:57.048Z",
+        "round": 44,
+        "ethPrice": "3353.49",
+        "btcPrice": "65410.56",
+        "ratio": "4.6915970921261703%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:41:00.314Z",
+        "round": 45,
+        "ethPrice": "3126.66",
+        "btcPrice": "63198.41",
+        "ratio": "4.561992209724258%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:41:07.076Z",
+        "round": 46,
+        "ethPrice": "2935.57",
+        "btcPrice": "61267.18",
+        "ratio": "4.438826457060141%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:41:10.300Z",
+        "round": 47,
+        "ethPrice": "2801.58",
+        "btcPrice": "59868.94",
+        "ratio": "4.3727732724311092%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:41:17.819Z",
+        "round": 48,
+        "ethPrice": "2705.08",
+        "btcPrice": "58837.86",
+        "ratio": "4.3230108232554252%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:41:21.099Z",
+        "round": 49,
+        "ethPrice": "2627.61",
+        "btcPrice": "57995.26",
+        "ratio": "4.2749293612029658%"
+      },
+      {
+        "type": "PRICE_UPDATE",
+        "timestamp": "2025-05-30T19:41:27.595Z",
+        "round": 50,
+        "ethPrice": "2559.96",
+        "btcPrice": "57248.72",
+        "ratio": "4.2274755128151221%"
+      }
+    ],
+    "trades": [
+      {
+        "id": 16,
+        "type": "CLOSE",
+        "timestamp": "2025-05-30T19:39:46.542Z",
+        "round": 31,
+        "alice": {
+          "pnl": "-1.534617"
+        },
+        "bob": {
+          "pnl": "1.831185"
+        },
+        "exitRatio": "8.5735488395451642%"
+      },
+      {
+        "id": 17,
+        "type": "OPEN",
+        "timestamp": "2025-05-30T19:39:57.171Z",
+        "round": 33,
+        "alice": {
+          "position": "LONG",
+          "notional": "235.0"
+        },
+        "bob": {
+          "position": "SHORT",
+          "notional": "353.0"
+        },
+        "entryRatio": "7.9899241136951381%"
+      },
+      {
+        "id": 18,
+        "type": "CLOSE",
+        "timestamp": "2025-05-30T19:40:07.462Z",
+        "round": 35,
+        "alice": {
+          "pnl": "-1.733475"
+        },
+        "bob": {
+          "pnl": "2.603901"
+        },
+        "exitRatio": "7.2010908966997877%"
+      },
+      {
+        "id": 19,
+        "type": "OPEN",
+        "timestamp": "2025-05-30T19:40:18.250Z",
+        "round": 37,
+        "alice": {
+          "position": "LONG",
+          "notional": "173.0"
+        },
+        "bob": {
+          "position": "SHORT",
+          "notional": "271.0"
+        },
+        "entryRatio": "6.5188206884126465%"
+      },
+      {
+        "id": 20,
+        "type": "CLOSE",
+        "timestamp": "2025-05-30T19:40:28.026Z",
+        "round": 39,
+        "alice": {
+          "pnl": "-1.132519"
+        },
+        "bob": {
+          "pnl": "1.774062"
+        },
+        "exitRatio": "5.8711072724883714%"
+      },
+      {
+        "id": 21,
+        "type": "OPEN",
+        "timestamp": "2025-05-30T19:40:39.788Z",
+        "round": 41,
+        "alice": {
+          "position": "LONG",
+          "notional": "367.0"
+        },
+        "bob": {
+          "position": "SHORT",
+          "notional": "240.0"
+        },
+        "entryRatio": "5.2774456056365478%"
+      },
+      {
+        "id": 22,
+        "type": "CLOSE",
+        "timestamp": "2025-05-30T19:40:49.719Z",
+        "round": 43,
+        "alice": {
+          "pnl": "-2.57308"
+        },
+        "bob": {
+          "pnl": "1.14885"
+        },
+        "exitRatio": "4.8548160087757341%"
+      },
+      {
+        "id": 23,
+        "type": "OPEN",
+        "timestamp": "2025-05-30T19:41:00.314Z",
+        "round": 45,
+        "alice": {
+          "position": "LONG",
+          "notional": "294.0"
+        },
+        "bob": {
+          "position": "SHORT",
+          "notional": "195.0"
+        },
+        "entryRatio": "4.561992209724258%"
+      },
+      {
+        "id": 24,
+        "type": "CLOSE",
+        "timestamp": "2025-05-30T19:41:10.300Z",
+        "round": 47,
+        "alice": {
+          "pnl": "-0.716817"
+        },
+        "bob": {
+          "pnl": "0.47544"
+        },
+        "exitRatio": "4.3727732724311092%"
+      },
+      {
+        "id": 25,
+        "type": "OPEN",
+        "timestamp": "2025-05-30T19:41:21.099Z",
+        "round": 49,
+        "alice": {
+          "position": "LONG",
+          "notional": "298.0"
+        },
+        "bob": {
+          "position": "SHORT",
+          "notional": "238.0"
+        },
+        "entryRatio": "4.2749293612029658%"
+      }
+    ]
+  },
+  "allEvents": [
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:37:07.229Z",
+      "round": 1,
+      "ethPrice": "3015.25",
+      "btcPrice": "60152.48",
+      "ratio": "4.7815162480985806%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:37:14.013Z",
+      "round": 2,
+      "ethPrice": "3071.36",
+      "btcPrice": "60712.20",
+      "ratio": "4.8579164976463123%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:37:17.301Z",
+      "round": 3,
+      "ethPrice": "3175.86",
+      "btcPrice": "61745.01",
+      "ratio": "4.9709748197017851%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:37:24.904Z",
+      "round": 4,
+      "ethPrice": "3268.58",
+      "btcPrice": "62646.36",
+      "ratio": "5.0275352633101063%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:37:28.042Z",
+      "round": 5,
+      "ethPrice": "3411.43",
+      "btcPrice": "64015.25",
+      "ratio": "5.1643053625076776%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:37:34.801Z",
+      "round": 6,
+      "ethPrice": "3586.30",
+      "btcPrice": "65655.99",
+      "ratio": "5.0594597359776163%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:37:38.061Z",
+      "round": 7,
+      "ethPrice": "3818.43",
+      "btcPrice": "67780.89",
+      "ratio": "5.4961705405145516%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:37:45.840Z",
+      "round": 8,
+      "ethPrice": "4124.63",
+      "btcPrice": "70498.50",
+      "ratio": "5.7361743455907141%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:37:49.079Z",
+      "round": 9,
+      "ethPrice": "4475.73",
+      "btcPrice": "73499.06",
+      "ratio": "5.9696929740504187%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:37:55.840Z",
+      "round": 10,
+      "ethPrice": "4879.74",
+      "btcPrice": "76816.32",
+      "ratio": "6.2258418856948708%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:38:00.135Z",
+      "round": 11,
+      "ethPrice": "5353.57",
+      "btcPrice": "80545.77",
+      "ratio": "6.5152407559265389%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:38:07.665Z",
+      "round": 12,
+      "ethPrice": "5832.32",
+      "btcPrice": "84147.26",
+      "ratio": "6.7520826367702906%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:38:10.891Z",
+      "round": 13,
+      "ethPrice": "6383.04",
+      "btcPrice": "88120.06",
+      "ratio": "7.0507171514163324%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:38:17.661Z",
+      "round": 14,
+      "ethPrice": "7034.05",
+      "btcPrice": "92613.78",
+      "ratio": "7.3922698257851887%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:38:20.912Z",
+      "round": 15,
+      "ethPrice": "7715.18",
+      "btcPrice": "97097.83",
+      "ratio": "7.6898809417258808%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:38:28.433Z",
+      "round": 16,
+      "ethPrice": "8441.14",
+      "btcPrice": "101666.08",
+      "ratio": "7.3608971079582586%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:38:31.736Z",
+      "round": 17,
+      "ethPrice": "9178.94",
+      "btcPrice": "106109.15",
+      "ratio": "8.2808802087405334%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:38:38.500Z",
+      "round": 18,
+      "ethPrice": "9993.71",
+      "btcPrice": "110818.53",
+      "ratio": "8.6076351615415342%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:38:41.716Z",
+      "round": 19,
+      "ethPrice": "10747.83",
+      "btcPrice": "114999.69",
+      "ratio": "8.8411225059323538%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:38:49.272Z",
+      "round": 20,
+      "ethPrice": "11508.91",
+      "btcPrice": "119071.41",
+      "ratio": "9.0973375146833797%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:38:53.470Z",
+      "round": 21,
+      "ethPrice": "12309.65",
+      "btcPrice": "123213.62",
+      "ratio": "9.3694243323514053%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:39:00.731Z",
+      "round": 22,
+      "ethPrice": "12846.85",
+      "btcPrice": "125902.17",
+      "ratio": "9.4420146857279249%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:39:03.752Z",
+      "round": 23,
+      "ethPrice": "13335.72",
+      "btcPrice": "128297.69",
+      "ratio": "9.2590556630571261%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:39:11.525Z",
+      "round": 24,
+      "ethPrice": "13729.48",
+      "btcPrice": "130191.82",
+      "ratio": "9.6668012996742077%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:39:14.784Z",
+      "round": 25,
+      "ethPrice": "14053.78",
+      "btcPrice": "131729.43",
+      "ratio": "9.7429539386870243%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:39:21.561Z",
+      "round": 26,
+      "ethPrice": "14067.69",
+      "btcPrice": "131794.61",
+      "ratio": "9.6401931022620351%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:39:25.042Z",
+      "round": 27,
+      "ethPrice": "14014.32",
+      "btcPrice": "131544.59",
+      "ratio": "9.6445013270576141%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:39:32.561Z",
+      "round": 28,
+      "ethPrice": "13608.84",
+      "btcPrice": "129641.58",
+      "ratio": "9.3754838769132866%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:39:35.806Z",
+      "round": 29,
+      "ethPrice": "13015.33",
+      "btcPrice": "126814.61",
+      "ratio": "9.1235172543167178%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:39:42.219Z",
+      "round": 30,
+      "ethPrice": "12442.54",
+      "btcPrice": "124024.14",
+      "ratio": "8.9349371665521001%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:39:46.542Z",
+      "round": 31,
+      "ethPrice": "11630.41",
+      "btcPrice": "119976.58",
+      "ratio": "8.5735488395451642%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:39:54.132Z",
+      "round": 32,
+      "ethPrice": "10960.33",
+      "btcPrice": "116520.39",
+      "ratio": "8.3706948668745258%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:39:57.171Z",
+      "round": 33,
+      "ethPrice": "10118.34",
+      "btcPrice": "112044.74",
+      "ratio": "7.9899241136951381%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:40:04.221Z",
+      "round": 34,
+      "ethPrice": "9207.96",
+      "btcPrice": "107004.24",
+      "ratio": "7.5940258611634763%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:40:07.462Z",
+      "round": 35,
+      "ethPrice": "8303.41",
+      "btcPrice": "101748.41",
+      "ratio": "7.2010908966997877%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:40:14.977Z",
+      "round": 36,
+      "ethPrice": "7487.47",
+      "btcPrice": "96749.22",
+      "ratio": "6.8544035664672467%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:40:18.250Z",
+      "round": 37,
+      "ethPrice": "6746.71",
+      "btcPrice": "91963.40",
+      "ratio": "6.5188206884126465%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:40:24.740Z",
+      "round": 38,
+      "ethPrice": "6120.11",
+      "btcPrice": "87692.83",
+      "ratio": "6.2396929299528816%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:40:28.026Z",
+      "round": 39,
+      "ethPrice": "5469.67",
+      "btcPrice": "83032.87",
+      "ratio": "5.8711072724883714%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:40:35.511Z",
+      "round": 40,
+      "ethPrice": "4908.12",
+      "btcPrice": "78770.53",
+      "ratio": "5.5811502594604974%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:40:39.788Z",
+      "round": 41,
+      "ethPrice": "4388.68",
+      "btcPrice": "74602.30",
+      "ratio": "5.2774456056365478%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:40:46.546Z",
+      "round": 42,
+      "ethPrice": "4013.47",
+      "btcPrice": "71413.26",
+      "ratio": "5.1051766224648651%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:40:49.719Z",
+      "round": 43,
+      "ethPrice": "3643.89",
+      "btcPrice": "68125.15",
+      "ratio": "4.8548160087757341%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:40:57.048Z",
+      "round": 44,
+      "ethPrice": "3353.49",
+      "btcPrice": "65410.56",
+      "ratio": "4.6915970921261703%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:41:00.314Z",
+      "round": 45,
+      "ethPrice": "3126.66",
+      "btcPrice": "63198.41",
+      "ratio": "4.561992209724258%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:41:07.076Z",
+      "round": 46,
+      "ethPrice": "2935.57",
+      "btcPrice": "61267.18",
+      "ratio": "4.438826457060141%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:41:10.300Z",
+      "round": 47,
+      "ethPrice": "2801.58",
+      "btcPrice": "59868.94",
+      "ratio": "4.3727732724311092%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:41:17.819Z",
+      "round": 48,
+      "ethPrice": "2705.08",
+      "btcPrice": "58837.86",
+      "ratio": "4.3230108232554252%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:41:21.099Z",
+      "round": 49,
+      "ethPrice": "2627.61",
+      "btcPrice": "57995.26",
+      "ratio": "4.2749293612029658%"
+    },
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:41:27.595Z",
+      "round": 50,
+      "ethPrice": "2559.96",
+      "btcPrice": "57248.72",
+      "ratio": "4.2274755128151221%"
+    }
+  ],
+  "allTrades": [
+    {
+      "id": 1,
+      "type": "OPEN",
+      "timestamp": "2025-05-30T19:37:07.229Z",
+      "round": 1,
+      "alice": {
+        "position": "LONG",
+        "notional": "349.0"
+      },
+      "bob": {
+        "position": "SHORT",
+        "notional": "362.0"
+      },
+      "entryRatio": "4.7815162480985806%"
+    },
+    {
+      "id": 2,
+      "type": "CLOSE",
+      "timestamp": "2025-05-30T19:37:17.301Z",
+      "round": 3,
+      "alice": {
+        "pnl": "0.689536"
+      },
+      "bob": {
+        "pnl": "-0.428944"
+      },
+      "exitRatio": "4.9709748197017851%"
+    },
+    {
+      "id": 3,
+      "type": "OPEN",
+      "timestamp": "2025-05-30T19:37:28.042Z",
+      "round": 5,
+      "alice": {
+        "position": "LONG",
+        "notional": "305.0"
+      },
+      "bob": {
+        "position": "SHORT",
+        "notional": "211.0"
+      },
+      "entryRatio": "5.1643053625076776%"
+    },
+    {
+      "id": 4,
+      "type": "CLOSE",
+      "timestamp": "2025-05-30T19:37:38.061Z",
+      "round": 7,
+      "alice": {
+        "pnl": "0.834472"
+      },
+      "bob": {
+        "pnl": "-0.57729"
+      },
+      "exitRatio": "5.4961705405145516%"
+    },
+    {
+      "id": 5,
+      "type": "OPEN",
+      "timestamp": "2025-05-30T19:37:49.079Z",
+      "round": 9,
+      "alice": {
+        "position": "LONG",
+        "notional": "223.0"
+      },
+      "bob": {
+        "position": "SHORT",
+        "notional": "173.0"
+      },
+      "entryRatio": "5.9696929740504187%"
+    },
+    {
+      "id": 6,
+      "type": "CLOSE",
+      "timestamp": "2025-05-30T19:38:00.135Z",
+      "round": 11,
+      "alice": {
+        "pnl": "1.728849"
+      },
+      "bob": {
+        "pnl": "-1.341215"
+      },
+      "exitRatio": "6.5152407559265389%"
+    },
+    {
+      "id": 7,
+      "type": "OPEN",
+      "timestamp": "2025-05-30T19:38:10.891Z",
+      "round": 13,
+      "alice": {
+        "position": "LONG",
+        "notional": "338.0"
+      },
+      "bob": {
+        "position": "SHORT",
+        "notional": "219.0"
+      },
+      "entryRatio": "7.0507171514163324%"
+    },
+    {
+      "id": 8,
+      "type": "CLOSE",
+      "timestamp": "2025-05-30T19:38:20.912Z",
+      "round": 15,
+      "alice": {
+        "pnl": "2.050251"
+      },
+      "bob": {
+        "pnl": "-1.328417"
+      },
+      "exitRatio": "7.6898809417258808%"
+    },
+    {
+      "id": 9,
+      "type": "OPEN",
+      "timestamp": "2025-05-30T19:38:31.736Z",
+      "round": 17,
+      "alice": {
+        "position": "LONG",
+        "notional": "261.0"
+      },
+      "bob": {
+        "position": "SHORT",
+        "notional": "159.0"
+      },
+      "entryRatio": "8.2808802087405334%"
+    },
+    {
+      "id": 10,
+      "type": "CLOSE",
+      "timestamp": "2025-05-30T19:38:41.716Z",
+      "round": 19,
+      "alice": {
+        "pnl": "1.527912"
+      },
+      "bob": {
+        "pnl": "-0.930797"
+      },
+      "exitRatio": "8.8411225059323538%"
+    },
+    {
+      "id": 11,
+      "type": "OPEN",
+      "timestamp": "2025-05-30T19:38:53.470Z",
+      "round": 21,
+      "alice": {
+        "position": "LONG",
+        "notional": "214.0"
+      },
+      "bob": {
+        "position": "SHORT",
+        "notional": "141.0"
+      },
+      "entryRatio": "9.3694243323514053%"
+    },
+    {
+      "id": 12,
+      "type": "CLOSE",
+      "timestamp": "2025-05-30T19:39:03.752Z",
+      "round": 23,
+      "alice": {
+        "pnl": "0.376647"
+      },
+      "bob": {
+        "pnl": "-0.248164"
+      },
+      "exitRatio": "9.2590556630571261%"
+    },
+    {
+      "id": 13,
+      "type": "OPEN",
+      "timestamp": "2025-05-30T19:39:14.784Z",
+      "round": 25,
+      "alice": {
+        "position": "LONG",
+        "notional": "283.0"
+      },
+      "bob": {
+        "position": "SHORT",
+        "notional": "358.0"
+      },
+      "entryRatio": "9.7429539386870243%"
+    },
+    {
+      "id": 14,
+      "type": "CLOSE",
+      "timestamp": "2025-05-30T19:39:25.042Z",
+      "round": 27,
+      "alice": {
+        "pnl": "-0.034689"
+      },
+      "bob": {
+        "pnl": "0.043882"
+      },
+      "exitRatio": "9.6445013270576141%"
+    },
+    {
+      "id": 15,
+      "type": "OPEN",
+      "timestamp": "2025-05-30T19:39:35.806Z",
+      "round": 29,
+      "alice": {
+        "position": "LONG",
+        "notional": "326.0"
+      },
+      "bob": {
+        "position": "SHORT",
+        "notional": "389.0"
+      },
+      "entryRatio": "9.1235172543167178%"
+    },
+    {
+      "id": 16,
+      "type": "CLOSE",
+      "timestamp": "2025-05-30T19:39:46.542Z",
+      "round": 31,
+      "alice": {
+        "pnl": "-1.534617"
+      },
+      "bob": {
+        "pnl": "1.831185"
+      },
+      "exitRatio": "8.5735488395451642%"
+    },
+    {
+      "id": 17,
+      "type": "OPEN",
+      "timestamp": "2025-05-30T19:39:57.171Z",
+      "round": 33,
+      "alice": {
+        "position": "LONG",
+        "notional": "235.0"
+      },
+      "bob": {
+        "position": "SHORT",
+        "notional": "353.0"
+      },
+      "entryRatio": "7.9899241136951381%"
+    },
+    {
+      "id": 18,
+      "type": "CLOSE",
+      "timestamp": "2025-05-30T19:40:07.462Z",
+      "round": 35,
+      "alice": {
+        "pnl": "-1.733475"
+      },
+      "bob": {
+        "pnl": "2.603901"
+      },
+      "exitRatio": "7.2010908966997877%"
+    },
+    {
+      "id": 19,
+      "type": "OPEN",
+      "timestamp": "2025-05-30T19:40:18.250Z",
+      "round": 37,
+      "alice": {
+        "position": "LONG",
+        "notional": "173.0"
+      },
+      "bob": {
+        "position": "SHORT",
+        "notional": "271.0"
+      },
+      "entryRatio": "6.5188206884126465%"
+    },
+    {
+      "id": 20,
+      "type": "CLOSE",
+      "timestamp": "2025-05-30T19:40:28.026Z",
+      "round": 39,
+      "alice": {
+        "pnl": "-1.132519"
+      },
+      "bob": {
+        "pnl": "1.774062"
+      },
+      "exitRatio": "5.8711072724883714%"
+    },
+    {
+      "id": 21,
+      "type": "OPEN",
+      "timestamp": "2025-05-30T19:40:39.788Z",
+      "round": 41,
+      "alice": {
+        "position": "LONG",
+        "notional": "367.0"
+      },
+      "bob": {
+        "position": "SHORT",
+        "notional": "240.0"
+      },
+      "entryRatio": "5.2774456056365478%"
+    },
+    {
+      "id": 22,
+      "type": "CLOSE",
+      "timestamp": "2025-05-30T19:40:49.719Z",
+      "round": 43,
+      "alice": {
+        "pnl": "-2.57308"
+      },
+      "bob": {
+        "pnl": "1.14885"
+      },
+      "exitRatio": "4.8548160087757341%"
+    },
+    {
+      "id": 23,
+      "type": "OPEN",
+      "timestamp": "2025-05-30T19:41:00.314Z",
+      "round": 45,
+      "alice": {
+        "position": "LONG",
+        "notional": "294.0"
+      },
+      "bob": {
+        "position": "SHORT",
+        "notional": "195.0"
+      },
+      "entryRatio": "4.561992209724258%"
+    },
+    {
+      "id": 24,
+      "type": "CLOSE",
+      "timestamp": "2025-05-30T19:41:10.300Z",
+      "round": 47,
+      "alice": {
+        "pnl": "-0.716817"
+      },
+      "bob": {
+        "pnl": "0.47544"
+      },
+      "exitRatio": "4.3727732724311092%"
+    },
+    {
+      "id": 25,
+      "type": "OPEN",
+      "timestamp": "2025-05-30T19:41:21.099Z",
+      "round": 49,
+      "alice": {
+        "position": "LONG",
+        "notional": "298.0"
+      },
+      "bob": {
+        "position": "SHORT",
+        "notional": "238.0"
+      },
+      "entryRatio": "4.2749293612029658%"
+    }
+  ]
+}

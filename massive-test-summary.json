@@ -1,0 +1,38 @@
+{
+  "generated": "2025-05-30T19:27:33.630Z",
+  "network": "arbitrum",
+  "contracts": {
+    "MockUSDC": "0xe2696990894452AbE9ce45ba557979c2cbc6B3dd",
+    "RatioOracle": "0x73521ACe086cDB7C4dd2cb6D9667582EC07F628f",
+    "SimplePerpV2": "0x99d45f0d21D135D0947F641Ae4C10E00DF820244"
+  },
+  "statistics": {
+    "totalEvents": 0,
+    "totalTrades": 0,
+    "priceUpdates": 0,
+    "scenarios": 6,
+    "traders": 12,
+    "positionsOpened": 0,
+    "positionsClosed": 0
+  },
+  "marketScenarios": [
+    "bull_run",
+    "bear_market",
+    "eth_season",
+    "btc_dominance",
+    "choppy",
+    "flash_crash"
+  ],
+  "priceRange": {
+    "eth": {
+      "min": null,
+      "max": null
+    },
+    "btc": {
+      "min": null,
+      "max": null
+    }
+  },
+  "events": [],
+  "priceHistory": []
+}

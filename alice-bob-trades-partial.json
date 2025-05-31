@@ -1,0 +1,13 @@
+{
+  "events": [
+    {
+      "type": "PRICE_UPDATE",
+      "timestamp": "2025-05-30T19:28:48.351Z",
+      "round": 1,
+      "ethPrice": "3013.52",
+      "btcPrice": "60135.21",
+      "ratio": "4.9087169808913285%"
+    }
+  ],
+  "trades": []
+}

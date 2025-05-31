@@ -9,11 +9,11 @@ import { PositionCard, type Position as PositionType } from "./components/positi
 import { ToastStack } from "./components/toast-stack"
 import { TradingPairSelector } from "./components/trading-pair-selector"
 import { RelativeSharesChart } from "./components/chart/RelativeSharesChart"
-import { LivePriceDisplay } from "./components/live-price-display"
 import { mockTokensData, mockPositionData } from "./data/mock-data"
 import { useLatestPrices } from "./lib/hooks/usePrices"
 import { useAllPositions, transformPositionForUI } from "./lib/hooks/usePositions"
 import { useRelativeSharesChartData } from "./lib/hooks/useRelativeSharesChartData"
+import { useLivePricesContext } from "./lib/contexts/LivePricesContext"
 // import { useToasts } from "./hooks/useToasts"; // If toasts are managed globally or triggered here
 
 export default function TradingInterface() {
@@ -28,23 +28,29 @@ export default function TradingInterface() {
   // Fetch real positions data
   const { positions, stats: positionStats, loading: positionsLoading, error: positionsError } = useAllPositions(10);
   
+  // Get live prices from context
+  const { ethShare, btcShare, prices, isLive } = useLivePricesContext();
+  
   // Use real tokens from the indexer (ETH/BTC for SimplePerpV2) - memoized to prevent re-renders
-  const realTokensData = useMemo(() => [
-    { 
-      symbol: 'ETH', 
-      currentShare: 50, 
-      weight: 50,
-      change24h: 0,
-      volatility: 15.2
-    },
-    { 
-      symbol: 'BTC', 
-      currentShare: 50, 
-      weight: 50,
-      change24h: 0,
-      volatility: 12.8
-    },
-  ], []);
+  const realTokensData = useMemo(() => {
+    const ethPrice = prices.find(p => p.symbol === 'ETH');
+    const btcPrice = prices.find(p => p.symbol === 'BTC');
+    
+    return [
+      { 
+        symbol: 'ETH', 
+        currentShare: ethShare ?? 50,
+        weight: 50,
+        price: ethPrice?.price
+      },
+      { 
+        symbol: 'BTC', 
+        currentShare: btcShare ?? 50,
+        weight: 50,
+        price: btcPrice?.price
+      },
+    ];
+  }, [ethShare, btcShare, prices]);
   
   // Memoize the tokens selection to prevent unnecessary re-renders
   const selectedTokens = useMemo(() => 
@@ -58,11 +64,14 @@ export default function TradingInterface() {
     useMockData
   );
   
-  // Use the first open position for display, or mock data if none
+  // Use the first open position for display, or mock data with live share if none
   const firstOpenPosition = positions.find(p => p.status === 'open');
   const displayPosition = firstOpenPosition 
     ? transformPositionForUI(firstOpenPosition)
-    : mockPositionData;
+    : {
+        ...mockPositionData,
+        currentShare: ethShare ?? mockPositionData.currentShare
+      };
 
   // Example of how OrderForm might interact with PositionCard after a successful order
   // This would typically involve a shared state/context or a callback system
@@ -120,9 +129,6 @@ export default function TradingInterface() {
             />
           </div>
         </div>
-
-        {/* Live Price Display */}
-        <LivePriceDisplay className="w-full" />
 
         {/* Loading states */}
         {(chartLoading || positionsLoading) && (

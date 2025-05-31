@@ -10,9 +10,8 @@ export interface Token {
   symbol: string
   weight: number
   currentShare: number
-  change24h?: number
-  volatility?: number
   price?: number
+  confidence?: number
 }
 
 interface ShareTableProps {
@@ -37,8 +36,8 @@ export function ShareTable({ tokens, useLiveData = true }: ShareTableProps) {
           return {
             ...token,
             currentShare: liveData.share,
-            change24h: liveData.change24h || token.change24h,
-            price: liveData.price
+            price: liveData.price,
+            confidence: liveData.confidence
           }
         }
         return token
@@ -88,9 +87,7 @@ export function ShareTable({ tokens, useLiveData = true }: ShareTableProps) {
             <TableHead className="text-gray-300">Token</TableHead>
             <TableHead className="text-gray-300">Price</TableHead>
             <TableHead className="text-gray-300">Current Share</TableHead>
-            <TableHead className="text-gray-300">Target Weight</TableHead>
-            <TableHead className="text-gray-300">24h Δ</TableHead>
-            <TableHead className="text-gray-300">Volatility (30d)</TableHead>
+            <TableHead className="text-gray-300">Confidence</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -127,17 +124,8 @@ export function ShareTable({ tokens, useLiveData = true }: ShareTableProps) {
                   </div>
                 </TableCell>
                 
-                <TableCell className="text-gray-300">
-                  {token.weight}%
-                </TableCell>
-                
-                <TableCell className={`font-medium ${(token.change24h ?? 0) >= 0 ? "text-green-400" : "text-red-400"}`}>
-                  {(token.change24h ?? 0) >= 0 ? "+" : ""}
-                  {(token.change24h ?? 0).toFixed(2)}%
-                </TableCell>
-                
-                <TableCell className="text-gray-300">
-                  {(token.volatility ?? 0).toFixed(1)}%
+                <TableCell className="text-xs text-gray-400">
+                  {token.confidence ? `±$${token.confidence.toFixed(2)}` : '-'}
                 </TableCell>
               </TableRow>
             )

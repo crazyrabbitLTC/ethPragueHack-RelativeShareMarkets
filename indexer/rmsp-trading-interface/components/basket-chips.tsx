@@ -4,8 +4,6 @@ interface Token {
   symbol: string
   weight: number
   currentShare: number
-  change24h: number
-  volatility: number
 }
 
 interface BasketChipsProps {
@@ -29,7 +27,7 @@ export function BasketChips({ baseToken, tokens, totalPnl, totalPnlPercent }: Ba
             className="flex items-center space-x-2 bg-gray-800/50 rounded-lg px-3 py-1.5 border border-gray-700 hover:border-gray-600 transition-colors cursor-pointer"
           >
             <span className="font-semibold text-sm">{token.symbol}</span>
-            <span className="text-xs text-gray-400">{token.weight}%</span>
+            <span className="text-xs text-gray-400">{token.currentShare.toFixed(1)}%</span>
           </div>
         ))}
       </div>

@@ -44,30 +44,31 @@ export function useLivePrices(pollInterval: number = 5000): UseLivePricesReturn 
       
       // Fetch from Pyth Hermes API
       const priceIds = [PRICE_FEED_IDS.ETH, PRICE_FEED_IDS.BTC]
-      const response = await fetch(
-        `https://hermes.pyth.network/api/latest_price_feeds?` +
-        priceIds.map(id => `ids[]=${id}`).join('&'),
-        {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-          mode: 'cors',
-          credentials: 'omit',
-        }
-      )
+      const url = `https://hermes.pyth.network/api/latest_price_feeds?` +
+        priceIds.map(id => `ids[]=${id}`).join('&')
+      
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      })
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const data = await response.json()
+      
+      // Log API response for debugging (can be removed later)
+      console.log('📊 Pyth API response received, data length:', data?.length)
 
       if (data && Array.isArray(data) && data.length >= 2) {
-        // Parse ETH and BTC prices
-        const ethData = data.find(item => item.id === PRICE_FEED_IDS.ETH)
-        const btcData = data.find(item => item.id === PRICE_FEED_IDS.BTC)
+        // Parse ETH and BTC prices - API returns IDs without 0x prefix
+        const ethData = data.find(item => item.id === PRICE_FEED_IDS.ETH.replace('0x', ''))
+        const btcData = data.find(item => item.id === PRICE_FEED_IDS.BTC.replace('0x', ''))
+        
 
         if (ethData?.price && btcData?.price) {
           // Convert from Pyth format

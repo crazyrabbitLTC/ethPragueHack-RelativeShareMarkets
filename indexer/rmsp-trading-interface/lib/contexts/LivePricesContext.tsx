@@ -3,27 +3,26 @@
 import React, { createContext, useContext, ReactNode } from 'react'
 import useLivePrices, { LivePriceData } from '@/lib/hooks/useLivePrices'
 
-interface LivePricesContextValue {
+interface LivePricesContextType {
   prices: LivePriceData[]
   isLoading: boolean
   error: string | null
   isLive: boolean
   lastUpdate: Date | null
-  refetch: () => Promise<void>
   ethPrice: number | null
   btcPrice: number | null
   ethShare: number | null
   btcShare: number | null
 }
 
-const LivePricesContext = createContext<LivePricesContextValue | undefined>(undefined)
+const LivePricesContext = createContext<LivePricesContextType | undefined>(undefined)
 
 export function LivePricesProvider({ children }: { children: ReactNode }) {
-  // Single instance of useLivePrices that will be shared across all components
-  const livePricesData = useLivePrices(5000) // Poll every 5 seconds
+  // Single instance of useLivePrices that all components will share
+  const pricesData = useLivePrices(5000) // Poll every 5 seconds
 
   return (
-    <LivePricesContext.Provider value={livePricesData}>
+    <LivePricesContext.Provider value={pricesData}>
       {children}
     </LivePricesContext.Provider>
   )

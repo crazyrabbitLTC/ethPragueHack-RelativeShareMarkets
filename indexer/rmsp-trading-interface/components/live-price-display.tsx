@@ -103,7 +103,7 @@ export function LivePriceDisplay({ onPriceUpdate, className }: LivePriceDisplayP
             <div key={priceData.symbol} className="flex items-center justify-between p-3 bg-gray-800/30 rounded-lg">
               <div className="flex items-center gap-3">
                 <div className="flex flex-col">
-                  <span className="font-semibold text-lg">{priceData.symbol}</span>
+                  <span className="font-semibold text-lg text-white">{priceData.symbol}</span>
                   <span className="text-xs text-gray-400">
                     {formatTimestamp(priceData.publishTime)}
                     {isStale && (
@@ -117,21 +117,13 @@ export function LivePriceDisplay({ onPriceUpdate, className }: LivePriceDisplayP
               
               <div className="text-right">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-xl">
+                  <span className="font-bold text-xl text-white">
                     {formatPrice(priceData.price, priceData.symbol)}
                   </span>
-                  {priceData.change24h !== undefined && (
-                    <Badge 
-                      variant={priceData.change24h >= 0 ? "default" : "destructive"}
-                      className={`text-xs ${priceData.change24h >= 0 ? 'bg-green-600' : 'bg-red-600'}`}
-                    >
-                      {priceData.change24h >= 0 ? '+' : ''}{priceData.change24h.toFixed(2)}%
-                    </Badge>
-                  )}
                 </div>
                 
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-medium text-gray-300">
                     {priceData.share.toFixed(2)}% share
                   </span>
                   {priceData.confidence > 0 && (

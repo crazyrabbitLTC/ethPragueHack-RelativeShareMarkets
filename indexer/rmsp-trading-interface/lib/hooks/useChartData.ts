@@ -16,8 +16,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
 import { LineData, Time } from 'lightweight-charts';
-import { GET_POSITION_UPDATES_FOR_CHART } from '@/lib/graphql/queries';
-import { formatBigInt } from '@/lib/utils/formatters';
+import { GET_POSITION_UPDATES } from '@/lib/graphql/queries';
 import { gql } from '@apollo/client';
 
 interface PositionUpdateItem {
@@ -129,9 +128,19 @@ export function generateMultiTokenMockData(tokens: Array<{symbol: string, initia
   return result;
 }
 
+// Utility function for BigInt formatting
+function formatBigInt(value: string, decimals: number = 18): number {
+  if (!value) return 0;
+  try {
+    return Number(BigInt(value)) / Math.pow(10, decimals);
+  } catch {
+    return 0;
+  }
+}
+
 export function useChartData(positionId: string = HARDCODED_POSITION_ID, limit: number = 1000, useMockData: boolean = false) {
   const { data: updateData, loading: updatesLoading, error: updatesError } = useQuery<PositionUpdatesForChartResponse>(
-    GET_POSITION_UPDATES_FOR_CHART,
+    GET_POSITION_UPDATES,
     {
       variables: { 
         limit,

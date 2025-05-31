@@ -2,10 +2,10 @@
 
 export interface Token {
   symbol: string
-  weight: number
+  weight?: number
   currentShare: number
-  change24h: number
-  volatility: number
+  change24h?: number
+  volatility?: number
 }
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -35,13 +35,13 @@ export function ShareTable({ tokens }: ShareTableProps) {
           {tokens.map((token) => (
             <TableRow key={token.symbol} className="border-gray-800 hover:bg-gray-800/20 transition-colors">
               <TableCell className="font-semibold">{token.symbol}</TableCell>
-              <TableCell className="text-gray-300">{token.weight}%</TableCell>
-              <TableCell className="font-medium">{token.currentShare.toFixed(1)}%</TableCell>
-              <TableCell className={`font-medium ${token.change24h >= 0 ? "text-green-400" : "text-red-400"}`}>
-                {token.change24h >= 0 ? "+" : ""}
-                {token.change24h.toFixed(2)}%
+              <TableCell className="text-gray-300">{(token.weight ?? 0)}%</TableCell>
+              <TableCell className="font-medium">{(token.currentShare ?? 0).toFixed(1)}%</TableCell>
+              <TableCell className={`font-medium ${(token.change24h ?? 0) >= 0 ? "text-green-400" : "text-red-400"}`}>
+                {(token.change24h ?? 0) >= 0 ? "+" : ""}
+                {(token.change24h ?? 0).toFixed(2)}%
               </TableCell>
-              <TableCell className="text-gray-300">{token.volatility.toFixed(1)}%</TableCell>
+              <TableCell className="text-gray-300">{(token.volatility ?? 0).toFixed(1)}%</TableCell>
             </TableRow>
           ))}
         </TableBody>

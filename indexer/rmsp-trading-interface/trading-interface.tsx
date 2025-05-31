@@ -18,18 +18,25 @@ import { useRelativeSharesChartData } from "./lib/hooks/useRelativeSharesChartDa
 export default function TradingInterface() {
   const [isConnected, setIsConnected] = useState(true)
   const [showAsAreaChart, setShowAsAreaChart] = useState(false)
+  const [useMockData, setUseMockData] = useState(false) // Switch to real data by default
   
   // Fetch real block number from indexer
   const { latestBlockNumber } = useLatestPrices(1, 5000); // Poll every 5 seconds
   const displayBlockNumber = latestBlockNumber || 18234567; // Fallback to default
 
   // Fetch real positions data
-  const { positions, stats: positionStats } = useAllPositions(10);
+  const { positions, stats: positionStats, loading: positionsLoading, error: positionsError } = useAllPositions(10);
   
-  // Get chart data for all tokens
+  // Use real tokens from the indexer (ETH/BTC for SimplePerpV2)
+  const realTokensData = [
+    { symbol: 'ETH', currentShare: 50, changePercent: 0 },
+    { symbol: 'BTC', currentShare: 50, changePercent: 0 },
+  ];
+  
+  // Get chart data - real data by default, with fallback to mock
   const { chartData, loading: chartLoading, error: chartError } = useRelativeSharesChartData(
-    mockTokensData,
-    true // Use mock data
+    useMockData ? mockTokensData : realTokensData,
+    useMockData
   );
   
   // Use the first open position for display, or mock data if none
@@ -48,6 +55,10 @@ export default function TradingInterface() {
     // addToast("Order placed successfully!", "success");
   }
 
+  // Show connection status and data source
+  const dataStatus = useMockData ? 'Mock Data' : 'Live Data';
+  const hasErrors = chartError || positionsError;
+
   return (
     <div className="min-h-screen bg-[#0d1117] text-white">
       <HeaderBar 
@@ -57,20 +68,51 @@ export default function TradingInterface() {
       />
 
       <main className="container mx-auto px-4 py-6 space-y-6">
+        {/* Data source toggle and status */}
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${hasErrors ? 'bg-red-500' : 'bg-green-500'}`}></div>
+              <span className="text-sm text-gray-400">{dataStatus}</span>
+            </div>
+            {hasErrors && (
+              <span className="text-xs text-red-400">
+                {chartError?.message || positionsError?.message}
+              </span>
+            )}
+          </div>
+          
+          <button
+            onClick={() => setUseMockData(!useMockData)}
+            className="px-3 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-700 transition-colors"
+          >
+            Switch to {useMockData ? 'Live' : 'Mock'} Data
+          </button>
+        </div>
+
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <TradingPairSelector />
           <div className="w-full md:w-auto">
             <BasketChips
               baseToken="ETH"
-              tokens={mockTokensData}
+              tokens={useMockData ? mockTokensData : realTokensData}
               totalPnl={positionStats?.totalPnl || mockPositionData.pnlUsd}
               totalPnlPercent={positionStats?.totalPnlPercent || mockPositionData.pnlPercent}
             />
           </div>
         </div>
 
-        {chartLoading && <div className="text-center py-10">Loading chart data...</div>}
-        {chartError && <div className="text-center py-10 text-red-500">Error loading chart: {chartError.message}</div>}
+        {/* Loading states */}
+        {(chartLoading || positionsLoading) && (
+          <div className="text-center py-10">
+            <div className="inline-flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              Loading {chartLoading ? 'chart' : 'position'} data...
+            </div>
+          </div>
+        )}
+        
+        {/* Chart display */}
         {!chartLoading && !chartError && chartData.length > 0 && (
           <div className="space-y-2">
             {/* Chart type toggle */}
@@ -89,19 +131,28 @@ export default function TradingInterface() {
             />
           </div>
         )}
+        
         {/* Fallback if chart data is empty and not loading/erroring */}
-        {!chartLoading && !chartError && chartData.length === 0 && (
-            <div className="relative w-full aspect-video bg-gray-900/30 rounded-xl border border-gray-800 flex items-center justify-center">
-                <p className="text-gray-500">No chart data available.</p>
+        {!chartLoading && !chartError && chartData.length === 0 && !useMockData && (
+          <div className="relative w-full aspect-video bg-gray-900/30 rounded-xl border border-gray-800 flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-gray-500 mb-2">No chart data available from indexer.</p>
+              <button
+                onClick={() => setUseMockData(true)}
+                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors"
+              >
+                Switch to Mock Data
+              </button>
             </div>
+          </div>
         )}
 
-        <ShareTable tokens={mockTokensData} />
+        <ShareTable tokens={useMockData ? mockTokensData : realTokensData} />
 
         <div className="grid lg:grid-cols-2 gap-6">
           <OrderForm
             baseToken="ETH"
-            basketTokens={mockTokensData}
+            basketTokens={useMockData ? mockTokensData : realTokensData}
           />
           <PositionCard
             initialPosition={displayPosition}

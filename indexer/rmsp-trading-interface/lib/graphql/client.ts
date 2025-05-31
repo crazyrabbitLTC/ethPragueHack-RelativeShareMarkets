@@ -2,13 +2,22 @@ import { ApolloClient, InMemoryCache, NormalizedCacheObject } from '@apollo/clie
 
 // Apollo Client instance for connecting to the Ponder indexer
 export const apolloClient: ApolloClient<NormalizedCacheObject> = new ApolloClient({
-  uri: 'http://localhost:42070/',
+  uri: 'http://localhost:42070/graphql',
   cache: new InMemoryCache({
     typePolicies: {
       Query: {
         fields: {
           positions: {
             // Merge incoming positions with existing cache
+            merge(existing = { items: [] }, incoming) {
+              return {
+                ...incoming,
+                items: [...(existing.items || []), ...(incoming.items || [])]
+              };
+            }
+          },
+          marketShares: {
+            // Merge market shares for time-series data
             merge(existing = { items: [] }, incoming) {
               return {
                 ...incoming,

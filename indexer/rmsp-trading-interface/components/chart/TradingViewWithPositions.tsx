@@ -120,7 +120,18 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
         };
         const series = chart.addSeries(LineSeries, lineOptions);
 
-        series.setData(tokenData.data);
+        // Ensure data is properly sorted and deduplicated
+        const sortedData = [...tokenData.data].sort((a, b) => (a.time as number) - (b.time as number));
+        
+        // Log data to debug
+        console.log(`Setting data for ${tokenData.symbol}:`, {
+          dataLength: sortedData.length,
+          firstTime: sortedData[0]?.time,
+          lastTime: sortedData[sortedData.length - 1]?.time,
+          hasDuplicates: sortedData.some((item, i) => i > 0 && item.time === sortedData[i - 1].time)
+        });
+        
+        series.setData(sortedData);
         marketSeriesRef.current.set(tokenData.symbol, series);
       });
     }
@@ -251,7 +262,28 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
         };
         const exposureSeries = chart.addSeries(AreaSeries, areaOptions);
 
-        exposureSeries.setData(exposureData.sort((a, b) => (a.time as number) - (b.time as number)));
+        // Sort and deduplicate exposure data
+        const sortedExposureData = exposureData.sort((a, b) => (a.time as number) - (b.time as number));
+        
+        // Remove duplicates
+        const dedupedExposureData: ChartPoint[] = [];
+        const seenTimes = new Set<number>();
+        
+        sortedExposureData.forEach(point => {
+          const time = point.time as number;
+          if (!seenTimes.has(time)) {
+            seenTimes.add(time);
+            dedupedExposureData.push(point);
+          }
+        });
+        
+        console.log('Setting exposure data:', {
+          originalLength: exposureData.length,
+          dedupedLength: dedupedExposureData.length,
+          removedDuplicates: exposureData.length - dedupedExposureData.length
+        });
+        
+        exposureSeries.setData(dedupedExposureData);
         exposureSeriesRef.current = exposureSeries;
       }
     }

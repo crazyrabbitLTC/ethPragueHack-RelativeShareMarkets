@@ -8,8 +8,32 @@ A decentralized perpetual trading protocol on Arbitrum that enables users to tak
 - **Relative Share Trading**: Trade the relative market dominance between ETH and BTC
 - **Perpetual Positions**: No expiry dates on positions
 - **Zero-Sum PnL**: Perfect symmetry between long and short positions
-- **Pyth Oracle Integration**: Real-time price feeds with staleness protection
+- **Live Pyth Oracle Integration**: Real-time price feeds from institutional data sources
+- **Dynamic Ratios**: ETH/BTC market share updates with live market movements
 - **Simple Margin System**: 30% initial margin requirement
+
+## 🏆 Pyth Network Integration
+
+This project demonstrates production-ready integration with Pyth Network's decentralized oracle system:
+
+### **Real-Time Price Feeds**
+- **Live Market Data**: ETH ~$2,542, BTC ~$104,710 (real prices from Pyth)
+- **Dynamic Ratios**: ETH 2.37%, BTC 97.63% (updates with market movements)
+- **Institutional Sources**: 40+ first-party data providers including major exchanges
+
+### **On-Chain Integration**
+- **Pyth Contract**: `0xff1a0f4744e8582DF1aE09D5611b887B6a12925C` on Arbitrum
+- **Price Feed IDs**: ETH/USD and BTC/USD feeds configured for live trading
+- **Automatic Updates**: Prices updated by ecosystem (GMX, Gains Network, MEV bots)
+
+### **Smart Contract Usage**
+```solidity
+// Get real-time ETH/BTC relative shares
+uint256 ethShare = ratioOracle.getRatioShare("ETH", "BTC");
+// ethShare = 2.37% (real market data)
+```
+
+📖 **[Full Pyth Integration Documentation](./PYTH_INTEGRATION.md)**
 
 ### Smart Contracts
 - `RatioOracle.sol`: Calculates relative market share using Pyth price feeds
@@ -85,15 +109,38 @@ cd contracts
 forge script script/Deploy.s.sol --rpc-url $ARBITRUM_RPC_URL --broadcast --verify
 ```
 
-## 💻 CLI Demo
+## 💻 Live Demo Scripts
 
-Run the interactive demo showing PnL symmetry:
+### Pyth Oracle Live Demo
+```bash
+# Update prices with real Pyth data and test integration
+npx ts-node scripts/pyth-live-demo.ts
+```
 
+### Live Trading Simulation
+```bash
+# Simulate real trading with live market prices
+npx ts-node scripts/live-trading-simulation.ts
+```
+
+### Quick Price Updates
+```bash
+# Update Pyth prices for immediate demo
+npx ts-node scripts/live-trading-simulation.ts --quick-update
+```
+
+The live demo shows:
+1. **Real-time price updates** from Pyth Network
+2. **Dynamic ETH/BTC ratios** changing with market movements  
+3. **Live trading simulation** with actual market data
+4. **Position P&L** calculated using real prices
+
+### Traditional CLI Demo
 ```bash
 npm run demo
 ```
 
-The demo will:
+The static demo shows:
 1. Deploy mock USDC and fund test wallets
 2. Open opposite positions (Alice long, Bob short)
 3. Simulate ETH price increase

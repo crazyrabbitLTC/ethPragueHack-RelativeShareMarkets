@@ -7,7 +7,9 @@ import { Input } from "@/components/ui/input"
 import { AlertTriangle, RefreshCw, Settings } from "lucide-react"
 import { useState } from "react"
 import { useOracleAdmin } from "@/lib/hooks/useOracleAdmin"
+import { useOracleEvents } from "@/lib/hooks/useOracleEvents"
 import { useAccount } from "wagmi"
+import { CONTRACTS } from "@/lib/contracts/abis"
 
 export function AdminTools() {
   const { isConnected } = useAccount();
@@ -16,14 +18,16 @@ export function AdminTools() {
     updateWithCurrentMarketPrices,
     isUpdating, 
     isOwner, 
-    lastUpdate, 
     currentRatioPercent,
-    isStale 
+    ethPrice,
+    btcPrice 
   } = useOracleAdmin();
   
   const [isExpanded, setIsExpanded] = useState(false);
   const [customEthPrice, setCustomEthPrice] = useState("2542.47");
   const [customBtcPrice, setCustomBtcPrice] = useState("104710.62");
+  
+  const { updateHistory, latestUpdate } = useOracleEvents(CONTRACTS.oracle);
 
   if (!isConnected) return null;
 
@@ -37,12 +41,6 @@ export function AdminTools() {
           <div className="flex items-center gap-2">
             <Settings className="w-4 h-4 text-gray-400" />
             <h3 className="text-sm font-medium text-gray-300">Demo Admin Tools</h3>
-            {isStale && (
-              <div className="flex items-center gap-1 text-xs text-yellow-400">
-                <AlertTriangle className="w-3 h-3" />
-                <span>Oracle Stale</span>
-              </div>
-            )}
           </div>
           <span className="text-xs text-gray-500">
             {isExpanded ? "−" : "+"}
@@ -54,17 +52,37 @@ export function AdminTools() {
             {/* Oracle Status */}
             <div className="p-3 bg-gray-800/30 rounded-lg space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-400">Oracle Status</span>
-                <div className={`text-xs px-2 py-1 rounded ${isStale ? 'bg-yellow-900/30 text-yellow-400' : 'bg-green-900/30 text-green-400'}`}>
-                  {isStale ? 'Stale' : 'Fresh'}
+                <span className="text-xs text-gray-400">Oracle Prices</span>
+                <div className="text-xs px-2 py-1 rounded bg-blue-900/30 text-blue-400">
+                  Live
                 </div>
               </div>
-              <div className="text-xs text-gray-500">
-                Last Update: {lastUpdate ? lastUpdate.toLocaleString() : 'Never'}
-              </div>
+              {latestUpdate && (
+                <div className="text-xs text-gray-500">
+                  Last Update: {new Date(Number(latestUpdate.timestamp) * 1000).toLocaleString()}
+                </div>
+              )}
               <div className="text-xs text-gray-500">
                 Current ETH Share: {currentRatioPercent.toFixed(2)}%
               </div>
+              {ethPrice ? (
+                <div className="text-xs text-gray-500">
+                  ETH Price: ${(Number(ethPrice) / 1e18).toFixed(2)}
+                </div>
+              ) : (
+                <div className="text-xs text-gray-500">
+                  ETH Price: Not set
+                </div>
+              )}
+              {btcPrice ? (
+                <div className="text-xs text-gray-500">
+                  BTC Price: ${(Number(btcPrice) / 1e18).toFixed(2)}
+                </div>
+              ) : (
+                <div className="text-xs text-gray-500">
+                  BTC Price: Not set
+                </div>
+              )}
             </div>
 
             {/* Quick Update Button */}
@@ -72,7 +90,7 @@ export function AdminTools() {
               <Label className="text-xs text-gray-400">Quick Actions</Label>
               <Button
                 onClick={updateWithCurrentMarketPrices}
-                disabled={isUpdating || !isOwner}
+                disabled={isUpdating}
                 size="sm"
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               >
@@ -88,11 +106,6 @@ export function AdminTools() {
                   </>
                 )}
               </Button>
-              {!isOwner && (
-                <p className="text-xs text-yellow-400">
-                  ⚠️ Only contract owner can update oracle
-                </p>
-              )}
             </div>
 
             {/* Custom Price Update */}
@@ -122,7 +135,7 @@ export function AdminTools() {
               </div>
               <Button
                 onClick={() => updateOraclePrice(customEthPrice, customBtcPrice)}
-                disabled={isUpdating || !isOwner || !customEthPrice || !customBtcPrice}
+                disabled={isUpdating || !customEthPrice || !customBtcPrice}
                 size="sm"
                 variant="outline"
                 className="w-full text-xs"
@@ -130,6 +143,23 @@ export function AdminTools() {
                 Update with Custom Prices
               </Button>
             </div>
+
+            {/* Oracle Update History */}
+            {updateHistory.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-xs text-gray-400">Recent Oracle Updates</Label>
+                <div className="p-3 bg-gray-800/30 rounded-lg space-y-1 max-h-32 overflow-y-auto">
+                  {updateHistory.map((update, index) => (
+                    <div key={update.transactionHash} className="text-xs text-gray-500">
+                      {new Date(Number(update.timestamp) * 1000).toLocaleTimeString()} - 
+                      <span className="text-gray-600 ml-1">
+                        Block #{update.blockNumber.toString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Test Wallets Info */}
             <div className="p-3 bg-gray-800/30 rounded-lg space-y-1">

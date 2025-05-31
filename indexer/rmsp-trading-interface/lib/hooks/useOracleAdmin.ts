@@ -7,25 +7,27 @@ import { useEffect } from 'react';
 const RATIO_ORACLE_ABI = [
   {
     "inputs": [
-      { "name": "ethPrice", "type": "uint256" },
-      { "name": "btcPrice", "type": "uint256" },
-      { "name": "timestamp", "type": "uint256" }
+      { "name": "token", "type": "string" },
+      { "name": "price", "type": "uint256" }
     ],
-    "name": "updatePrice",
+    "name": "setPrice",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "lastUpdateTimestamp",
+    "inputs": [{ "name": "", "type": "string" }],
+    "name": "mockPrices",
     "outputs": [{ "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "currentRatio",
+    "inputs": [
+      { "name": "baseToken", "type": "string" },
+      { "name": "quoteToken", "type": "string" }
+    ],
+    "name": "getRatioShare",
     "outputs": [{ "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
@@ -36,6 +38,14 @@ const RATIO_ORACLE_ABI = [
     "outputs": [{ "name": "", "type": "address" }],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": false, "name": "timestamp", "type": "uint256" }
+    ],
+    "name": "PricesUpdated",
+    "type": "event"
   }
 ] as const;
 
@@ -43,21 +53,36 @@ export function useOracleAdmin() {
   const { address } = useAccount();
   const { toast } = useToast();
 
-  // Read last update timestamp
-  const { data: lastUpdateTimestamp } = useReadContract({
+  // Note: The contract doesn't track last update timestamps for mock prices
+
+  // Read ETH price
+  const { data: ethPrice } = useReadContract({
     address: CONTRACTS.oracle,
     abi: RATIO_ORACLE_ABI,
-    functionName: 'lastUpdateTimestamp',
+    functionName: 'mockPrices',
+    args: ['ETH'],
     query: {
-      refetchInterval: 10000,
+      refetchInterval: 5000,
     }
   });
 
-  // Read current ratio
+  // Read BTC price
+  const { data: btcPrice } = useReadContract({
+    address: CONTRACTS.oracle,
+    abi: RATIO_ORACLE_ABI,
+    functionName: 'mockPrices',
+    args: ['BTC'],
+    query: {
+      refetchInterval: 5000,
+    }
+  });
+
+  // Get current ratio
   const { data: currentRatio } = useReadContract({
     address: CONTRACTS.oracle,
     abi: RATIO_ORACLE_ABI,
-    functionName: 'currentRatio',
+    functionName: 'getRatioShare',
+    args: ['ETH', 'BTC'],
     query: {
       refetchInterval: 10000,
     }
@@ -70,54 +95,75 @@ export function useOracleAdmin() {
     functionName: 'owner',
   });
 
-  // Update price function
+  // Update ETH price function
   const { 
-    writeContract: updatePrice, 
-    data: updateTxHash,
-    isPending: isUpdating,
-    error: updateError
+    writeContract: updateEthPrice, 
+    data: ethTxHash,
+    isPending: isUpdatingEth,
+    error: ethError
   } = useWriteContract();
 
-  // Wait for transaction
-  const { isLoading: isUpdateConfirming, isSuccess: isUpdateSuccess } = useWaitForTransactionReceipt({
-    hash: updateTxHash,
+  // Update BTC price function
+  const { 
+    writeContract: updateBtcPrice, 
+    data: btcTxHash,
+    isPending: isUpdatingBtc,
+    error: btcError
+  } = useWriteContract();
+
+  // Wait for transactions
+  const { isLoading: isEthConfirming, isSuccess: isEthSuccess } = useWaitForTransactionReceipt({
+    hash: ethTxHash,
+  });
+
+  const { isLoading: isBtcConfirming, isSuccess: isBtcSuccess } = useWaitForTransactionReceipt({
+    hash: btcTxHash,
   });
 
   // Handle success
   useEffect(() => {
-    if (isUpdateSuccess) {
+    if (isEthSuccess && isBtcSuccess) {
       toast({
         title: "Oracle Updated! 🎯",
-        description: "Prices have been updated successfully",
+        description: "Both ETH and BTC prices have been updated",
       });
     }
-  }, [isUpdateSuccess, toast]);
+  }, [isEthSuccess, isBtcSuccess, toast]);
 
   // Handle errors
   useEffect(() => {
-    if (updateError) {
+    const error = ethError || btcError;
+    if (error) {
       toast({
         title: "Update Failed",
-        description: updateError.message.includes("Ownable") 
-          ? "Only the contract owner can update prices" 
-          : "Failed to update oracle prices",
+        description: "Failed to update oracle prices",
         variant: "destructive",
       });
     }
-  }, [updateError, toast]);
+  }, [ethError, btcError, toast]);
 
   const updateOraclePrice = async (ethPriceUSD: string, btcPriceUSD: string) => {
     try {
       const ethPrice = parseUnits(ethPriceUSD, 18);
       const btcPrice = parseUnits(btcPriceUSD, 18);
-      const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
-      updatePrice({
+      // Update ETH price
+      updateEthPrice({
         address: CONTRACTS.oracle,
         abi: RATIO_ORACLE_ABI,
-        functionName: 'updatePrice',
-        args: [ethPrice, btcPrice, timestamp],
+        functionName: 'setPrice',
+        args: ['ETH', ethPrice],
       });
+
+      // Wait a bit, then update BTC price
+      setTimeout(() => {
+        updateBtcPrice({
+          address: CONTRACTS.oracle,
+          abi: RATIO_ORACLE_ABI,
+          functionName: 'setPrice',
+          args: ['BTC', btcPrice],
+        });
+      }, 1000);
     } catch (error) {
       console.error('Oracle update error:', error);
       toast({
@@ -136,17 +182,16 @@ export function useOracleAdmin() {
   };
 
   const isOwner = owner && address && owner.toLowerCase() === address.toLowerCase();
-  const lastUpdate = lastUpdateTimestamp ? new Date(Number(lastUpdateTimestamp) * 1000) : null;
   const currentRatioPercent = currentRatio ? Number(currentRatio) / 1e16 : 0;
-  const isStale = lastUpdate ? (Date.now() - lastUpdate.getTime()) > 300000 : true; // 5 minutes
+  const isUpdating = isUpdatingEth || isUpdatingBtc || isEthConfirming || isBtcConfirming;
 
   return {
     updateOraclePrice,
     updateWithCurrentMarketPrices,
-    isUpdating: isUpdating || isUpdateConfirming,
+    isUpdating,
     isOwner,
-    lastUpdate,
     currentRatioPercent,
-    isStale,
+    ethPrice,
+    btcPrice,
   };
 }

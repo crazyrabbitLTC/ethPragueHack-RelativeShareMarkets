@@ -30,6 +30,18 @@ export function useUserPosition() {
       refetchInterval: 5000, // Refetch every 5 seconds
     }
   });
+  
+  // Also read the user's deposited balance in the perp contract
+  const { data: perpBalance, refetch: refetchPerpBalance } = useReadContract({
+    address: CONTRACTS.perp,
+    abi: SimplePerpV2ABI,
+    functionName: 'balances',
+    args: address ? [address] : undefined,
+    query: {
+      enabled: !!address,
+      refetchInterval: 5000,
+    }
+  });
 
   const position: OnChainPosition = data ? {
     baseToken: data[0] || '',
@@ -51,14 +63,16 @@ export function useUserPosition() {
     hasPosition: false,
   };
   
-  console.log('Position data:', {
-    address,
-    raw: data,
-    parsed: position,
-    hasPosition: position.hasPosition
-  });
 
-  return { position, isLoading, error, refetch };
+  return { 
+    position, 
+    isLoading, 
+    error, 
+    refetch,
+    perpBalance: perpBalance || 0n,
+    perpBalanceFormatted: perpBalance ? formatUnits(perpBalance, 6) : '0',
+    refetchPerpBalance 
+  };
 }
 
 // Hook for reading current ratio
@@ -79,6 +93,17 @@ export function useCurrentRatio(baseToken: string = "ETH", quoteToken: string = 
     isLoading, 
     error 
   };
+}
+
+// Hook to check if using mock prices
+export function useOraclePriceMode() {
+  const { data: useMockPrices } = useReadContract({
+    address: CONTRACTS.oracle,
+    abi: RatioOracleABI,
+    functionName: 'useMockPrices',
+  });
+  
+  return { useMockPrices: useMockPrices ?? true };
 }
 
 // Hook for USDC balance and airdrop
@@ -136,27 +161,66 @@ export function useUSDC() {
     hash: approveTxHash,
   });
 
-  // Handle mint success
+  // Handle mint transactions
+  useEffect(() => {
+    if (mintTxHash) {
+      toast({
+        title: "Minting USDC...",
+        description: `Transaction submitted - View on Arbiscan: https://arbiscan.io/tx/${mintTxHash}`,
+      });
+    }
+  }, [mintTxHash, toast]);
+  
   useEffect(() => {
     if (isMintSuccess) {
       toast({
         title: "USDC Airdrop Successful! 💰",
-        description: "$1,000,000 USDC has been minted to your wallet",
+        description: `$1,000,000 USDC has been minted - View tx: https://arbiscan.io/tx/${mintTxHash}`,
       });
       refetchBalance();
     }
-  }, [isMintSuccess, refetchBalance, toast]);
+  }, [isMintSuccess, mintTxHash, refetchBalance, toast]);
 
-  // Handle approve success
+  // Handle approve transactions
+  useEffect(() => {
+    if (approveTxHash) {
+      toast({
+        title: "Approving USDC...",
+        description: `Transaction submitted - View on Arbiscan: https://arbiscan.io/tx/${approveTxHash}`,
+      });
+    }
+  }, [approveTxHash, toast]);
+  
   useEffect(() => {
     if (isApproveSuccess) {
       toast({
-        title: "Approval Successful!",
-        description: "USDC spending approved for SimplePerpV2",
+        title: "Approval Successful! ✅",
+        description: `USDC spending approved - View tx: https://arbiscan.io/tx/${approveTxHash}`,
       });
       refetchAllowance();
     }
-  }, [isApproveSuccess, refetchAllowance, toast]);
+  }, [isApproveSuccess, approveTxHash, refetchAllowance, toast]);
+  
+  // Handle errors
+  useEffect(() => {
+    if (mintError) {
+      toast({
+        title: "Airdrop Failed ❌",
+        description: mintError.message || "Failed to mint USDC. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [mintError, toast]);
+  
+  useEffect(() => {
+    if (approveError) {
+      toast({
+        title: "Approval Failed ❌",
+        description: approveError.message || "Failed to approve USDC. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [approveError, toast]);
 
   const airdrop = async () => {
     if (!address) {
@@ -222,9 +286,16 @@ export function useUSDC() {
 // Hook for trading operations
 export function useTrading() {
   const { toast } = useToast();
-  const { refetch: refetchPosition } = useUserPosition();
+  const { refetch: refetchPosition, refetchPerpBalance } = useUserPosition();
   const { refetchBalance, refetchAllowance } = useUSDC();
+  const { useMockPrices } = useOraclePriceMode();
   const [shouldUpdateOracle, setShouldUpdateOracle] = useState(true); // Toggle for auto-update
+  const [pendingPosition, setPendingPosition] = useState<{
+    notionalUSDC: string;
+    isLong: boolean;
+    baseToken: string;
+    quoteToken: string;
+  } | null>(null);
   
   // Open position
   const { 
@@ -249,6 +320,30 @@ export function useTrading() {
     isPending: isAddingCollateral,
     error: addCollatError
   } = useWriteContract();
+  
+  // Deposit USDC
+  const { 
+    writeContract: depositUSDC, 
+    data: depositTxHash,
+    isPending: isDepositing,
+    error: depositError
+  } = useWriteContract();
+  
+  // Withdraw USDC
+  const { 
+    writeContract: withdrawUSDC, 
+    data: withdrawTxHash,
+    isPending: isWithdrawing,
+    error: withdrawError
+  } = useWriteContract();
+  
+  // Update prices
+  const { 
+    writeContract: updatePrices, 
+    data: updatePriceTxHash,
+    isPending: isUpdatingPrices,
+    error: updatePriceError
+  } = useWriteContract();
 
   // Wait for transactions
   const { isLoading: isOpenConfirming, isSuccess: isOpenSuccess } = useWaitForTransactionReceipt({
@@ -262,43 +357,212 @@ export function useTrading() {
   const { isLoading: isAddCollatConfirming, isSuccess: isAddCollatSuccess } = useWaitForTransactionReceipt({
     hash: addCollatTxHash,
   });
+  
+  const { isLoading: isDepositConfirming, isSuccess: isDepositSuccess } = useWaitForTransactionReceipt({
+    hash: depositTxHash,
+  });
+  
+  const { isLoading: isWithdrawConfirming, isSuccess: isWithdrawSuccess } = useWaitForTransactionReceipt({
+    hash: withdrawTxHash,
+  });
+  
+  const { isLoading: isUpdatePriceConfirming, isSuccess: isUpdatePriceSuccess } = useWaitForTransactionReceipt({
+    hash: updatePriceTxHash,
+  });
 
-  // Handle success notifications
+  // Handle transaction status updates
+  useEffect(() => {
+    if (openTxHash) {
+      toast({
+        title: "Opening Position...",
+        description: `Transaction submitted - View on Arbiscan: https://arbiscan.io/tx/${openTxHash}`,
+      });
+    }
+  }, [openTxHash, toast]);
+
   useEffect(() => {
     if (isOpenSuccess) {
       toast({
-        title: "Position Opened!",
-        description: "Your position has been successfully opened",
+        title: "Position Opened! ✅",
+        description: `Your position has been successfully opened - View tx: https://arbiscan.io/tx/${openTxHash}`,
       });
       refetchPosition();
       refetchBalance();
     }
-  }, [isOpenSuccess, refetchPosition, refetchBalance, toast]);
+  }, [isOpenSuccess, openTxHash, refetchPosition, refetchBalance, toast]);
+
+  useEffect(() => {
+    if (closeTxHash) {
+      toast({
+        title: "Closing Position...",
+        description: `Transaction submitted - View on Arbiscan: https://arbiscan.io/tx/${closeTxHash}`,
+      });
+    }
+  }, [closeTxHash, toast]);
 
   useEffect(() => {
     if (isCloseSuccess) {
       toast({
-        title: "Position Closed!",
-        description: "Your position has been successfully closed",
+        title: "Position Closed! ✅",
+        description: `Your position has been successfully closed - View tx: https://arbiscan.io/tx/${closeTxHash}`,
       });
       refetchPosition();
       refetchBalance();
     }
-  }, [isCloseSuccess, refetchPosition, refetchBalance, toast]);
+  }, [isCloseSuccess, closeTxHash, refetchPosition, refetchBalance, toast]);
 
   useEffect(() => {
     if (isAddCollatSuccess) {
       toast({
-        title: "Collateral Added!",
+        title: "Collateral Added! ✅",
         description: "Additional collateral has been added to your position",
       });
       refetchPosition();
       refetchBalance();
     }
   }, [isAddCollatSuccess, refetchPosition, refetchBalance, toast]);
+  
+  // Handle deposit success
+  useEffect(() => {
+    if (depositTxHash) {
+      toast({
+        title: "Depositing USDC...",
+        description: `Transaction submitted - View on Arbiscan: https://arbiscan.io/tx/${depositTxHash}`,
+      });
+    }
+  }, [depositTxHash, toast]);
+  
+  useEffect(() => {
+    if (isDepositSuccess) {
+      toast({
+        title: "Deposit Successful! ✅",
+        description: `USDC deposited to trading account - View tx: https://arbiscan.io/tx/${depositTxHash}`,
+      });
+      refetchPosition();
+      refetchPerpBalance();
+      refetchBalance();
+    }
+  }, [isDepositSuccess, depositTxHash, refetchPosition, refetchPerpBalance, refetchBalance, toast]);
+  
+  // Handle withdraw transactions
+  useEffect(() => {
+    if (withdrawTxHash) {
+      toast({
+        title: "Withdrawing USDC...",
+        description: `Transaction submitted - View on Arbiscan: https://arbiscan.io/tx/${withdrawTxHash}`,
+      });
+    }
+  }, [withdrawTxHash, toast]);
+  
+  useEffect(() => {
+    if (isWithdrawSuccess) {
+      toast({
+        title: "Withdrawal Successful! ✅",
+        description: `USDC withdrawn to wallet - View tx: https://arbiscan.io/tx/${withdrawTxHash}`,
+      });
+      refetchPosition();
+      refetchBalance();
+    }
+  }, [isWithdrawSuccess, withdrawTxHash, refetchPosition, refetchBalance, toast]);
 
-  const open = async (notionalUSDC: string, isLong: boolean, baseToken: string = "ETH", quoteToken: string = "BTC,SOL,AVAX") => {
+  // Handle errors
+  useEffect(() => {
+    if (openError) {
+      // Check if it's a price stale error
+      const errorMessage = openError.message || "";
+      if (errorMessage.includes("Price too stale")) {
+        toast({
+          title: "Price Data Too Old ⏰",
+          description: "Click the 'Update Oracle Prices' button to refresh prices before trading.",
+          variant: "destructive",
+        });
+      } else if (errorMessage.includes("Insufficient margin")) {
+        toast({
+          title: "Insufficient Margin ❌",
+          description: "You need to deposit more USDC to your trading account.",
+          variant: "destructive",
+        });
+      } else if (errorMessage.includes("execution reverted")) {
+        toast({
+          title: "Transaction Reverted ❌",
+          description: "The transaction failed. Please check your balances and try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Transaction Failed ❌",
+          description: openError.message || "Failed to open position. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+  }, [openError, toast]);
+
+  useEffect(() => {
+    if (closeError) {
+      toast({
+        title: "Transaction Failed ❌",
+        description: closeError.message || "Failed to close position. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [closeError, toast]);
+  
+  useEffect(() => {
+    if (depositError) {
+      toast({
+        title: "Deposit Failed ❌",
+        description: depositError.message || "Failed to deposit. Please check your approval and balance.",
+        variant: "destructive",
+      });
+    }
+  }, [depositError, toast]);
+  
+  useEffect(() => {
+    if (withdrawError) {
+      toast({
+        title: "Withdrawal Failed ❌",
+        description: withdrawError.message || "Failed to withdraw. Please check your balance.",
+        variant: "destructive",
+      });
+    }
+  }, [withdrawError, toast]);
+  
+  // Handle price update success - open position after prices are updated
+  useEffect(() => {
+    if (updatePriceTxHash) {
+      toast({
+        title: "Updating Prices...",
+        description: `Price update submitted - View on Arbiscan: https://arbiscan.io/tx/${updatePriceTxHash}`,
+      });
+    }
+  }, [updatePriceTxHash, toast]);
+  
+  useEffect(() => {
+    if (isUpdatePriceSuccess && pendingPosition) {
+      toast({
+        title: "Prices Updated! ✅",
+        description: "Now opening your position with fresh prices",
+      });
+      
+      // Open the position with updated prices
+      const notional = parseUnits(pendingPosition.notionalUSDC, 6);
+      openPosition({
+        address: CONTRACTS.perp,
+        abi: SimplePerpV2ABI,
+        functionName: 'openPosition',
+        args: [pendingPosition.baseToken, pendingPosition.quoteToken, notional, pendingPosition.isLong],
+      });
+      
+      // Clear pending position
+      setPendingPosition(null);
+    }
+  }, [isUpdatePriceSuccess, pendingPosition, openPosition, toast]);
+
+  const open = async (notionalUSDC: string, isLong: boolean, baseToken: string = "ETH", quoteToken: string = "BTC") => {
     try {
+      console.log('Opening position with:', { baseToken, quoteToken, notionalUSDC, isLong });
+      
       const notional = parseUnits(notionalUSDC, 6); // Convert to 6 decimal USDC
       openPosition({
         address: CONTRACTS.perp,
@@ -351,13 +615,57 @@ export function useTrading() {
       });
     }
   };
+  
+  const deposit = async (amountUSDC: string) => {
+    try {
+      const amount = parseUnits(amountUSDC, 6); // Convert to 6 decimal USDC
+      depositUSDC({
+        address: CONTRACTS.perp,
+        abi: SimplePerpV2ABI,
+        functionName: 'deposit',
+        args: [amount],
+      });
+    } catch (error) {
+      console.error('Deposit error:', error);
+      toast({
+        title: "Failed to Deposit",
+        description: "Please check your balance and approval.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const withdraw = async (amountUSDC: string) => {
+    try {
+      const amount = parseUnits(amountUSDC, 6); // Convert to 6 decimal USDC
+      withdrawUSDC({
+        address: CONTRACTS.perp,
+        abi: SimplePerpV2ABI,
+        functionName: 'withdraw',
+        args: [amount],
+      });
+    } catch (error) {
+      console.error('Withdraw error:', error);
+      toast({
+        title: "Failed to Withdraw",
+        description: "Please check your balance and open positions.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return {
     openPosition: open,
     closePosition: close,
     addCollateral: addMoreCollateral,
-    isOpening: isOpening || isOpenConfirming,
+    deposit,
+    withdraw,
+    isOpening: isOpening || isOpenConfirming || isUpdatingPrices || isUpdatePriceConfirming,
     isClosing: isClosing || isCloseConfirming,
     isAddingCollateral: isAddingCollateral || isAddCollatConfirming,
+    isDepositing: isDepositing || isDepositConfirming,
+    isWithdrawing: isWithdrawing || isWithdrawConfirming,
+    openTxHash,
+    isOpenSuccess,
   };
 }

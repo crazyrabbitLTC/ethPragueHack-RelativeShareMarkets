@@ -15,7 +15,13 @@
     "test-deployed": "node scripts/test-deployed.js",
     "generate-data": "node scripts/generate-test-data.js",
     "generate-data:quick": "node scripts/generate-test-data.js 5",
-    "generate-data:long": "node scripts/generate-test-data.js 30"
+    "generate-data:long": "node scripts/generate-test-data.js 30",
+    "activate-pyth": "npx ts-node scripts/activate-pyth.ts",
+    "activate-pyth:deployer": "npx ts-node scripts/activate-pyth-with-deployer.ts",
+    "update-prices": "npx ts-node scripts/update-pyth-prices-fixed.ts",
+    "update-prices:old": "npx ts-node scripts/update-pyth-prices.ts",
+    "check-price-ids": "npx ts-node scripts/check-price-ids.ts",
+    "pyth-demo": "npx ts-node scripts/pyth-live-demo.ts"
   },
   "keywords": [],
   "author": "",

@@ -112,16 +112,9 @@ export function ShareTable({ tokens, useLiveData = true }: ShareTableProps) {
                 </TableCell>
                 
                 <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">
-                      {(token.currentShare ?? 0).toFixed(useLiveData && debouncedIsLive ? 4 : 1)}%
-                    </span>
-                    {useLiveData && debouncedIsLive && (
-                      <Badge variant="outline" className="text-xs text-green-400">
-                        LIVE
-                      </Badge>
-                    )}
-                  </div>
+                  <span className="text-lg">
+                    {(token.currentShare ?? 0).toFixed(useLiveData && debouncedIsLive ? 4 : 1)}%
+                  </span>
                 </TableCell>
                 
                 <TableCell className="text-xs text-gray-400">

@@ -26,7 +26,7 @@ export function PositionCardV2() {
     const notionalFormatted = parseFloat(formatUnits(position.notional, 6));
     // Calculate collateral from notional (30% margin requirement)
     const collateralFormatted = notionalFormatted * 0.3;
-    const entryRatioPercent = Number(position.entryShare) / 1e18;
+    const entryRatioPercent = (Number(position.entryShare) / 1e18) * 100; // Convert to percentage
     const currentRatioPercent = ratioPercent || 0;
     
     // Handle edge cases
@@ -45,7 +45,7 @@ export function PositionCardV2() {
       };
     }
     
-    // Calculate PnL based on ratio change
+    // Calculate PnL based on ratio change (both values are now in percentage)
     const ratioChange = position.isLong 
       ? (currentRatioPercent - entryRatioPercent) / entryRatioPercent
       : (entryRatioPercent - currentRatioPercent) / entryRatioPercent;
@@ -265,12 +265,12 @@ export function PositionCardV2() {
         <summary className="text-xs text-gray-500 cursor-pointer">Debug Info</summary>
         <div className="mt-2 p-2 bg-gray-900/50 rounded text-xs text-gray-400 space-y-1">
           <div>Wallet: {address}</div>
-          <div>Entry Ratio Raw: {position.entryRatio.toString()}</div>
-          <div>Current Ratio: {ratio.toString()}</div>
-          <div>Notional: {position.notional.toString()} ({formatUnits(position.notional, 6)} USDC)</div>
-          <div>Collateral: {position.collateral.toString()} ({formatUnits(position.collateral, 6)} USDC)</div>
-          <div>Is Long: {position.isLong.toString()}</div>
-          <div>Entry Timestamp: {position.openTimestamp.toString()}</div>
+          <div>Entry Share Raw: {position.entryShare?.toString() || 'N/A'}</div>
+          <div>Current Ratio: {ratio?.toString() || 'N/A'}</div>
+          <div>Notional: {position.notional?.toString() || '0'} ({formatUnits(position.notional || 0n, 6)} USDC)</div>
+          <div>Collateral: {position.collateral?.toString() || 'N/A'} ({position.collateral ? formatUnits(position.collateral, 6) : 'N/A'} USDC)</div>
+          <div>Is Long: {position.isLong?.toString() || 'N/A'}</div>
+          <div>Entry Timestamp: {position.openedAt?.toString() || 'N/A'}</div>
           <div>PnL Calc: {position.isLong ? 'Long' : 'Short'} - Entry: {positionMetrics.entryRatioPercent.toFixed(4)}% → Current: {positionMetrics.currentRatioPercent.toFixed(4)}%</div>
         </div>
       </details>

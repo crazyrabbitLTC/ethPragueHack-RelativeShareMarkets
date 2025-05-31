@@ -30,7 +30,28 @@ export const SimplePerpV2ABI = [
     "stateMutability": "view",
     "type": "function"
   },
+  {
+    "inputs": [{ "name": "user", "type": "address" }],
+    "name": "balances",
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
   // Write functions
+  {
+    "inputs": [{ "name": "amount", "type": "uint256" }],
+    "name": "deposit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "name": "amount", "type": "uint256" }],
+    "name": "withdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
   {
     "inputs": [
       { "name": "baseToken", "type": "string" },
@@ -161,6 +182,27 @@ export const RatioOracleABI = [
     "inputs": [],
     "name": "lastUpdateTimestamp",
     "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "name": "priceUpdateData", "type": "bytes[]" }],
+    "name": "updatePriceFeeds",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "name": "priceUpdateData", "type": "bytes[]" }],
+    "name": "getUpdateFee",
+    "outputs": [{ "name": "fee", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "useMockPrices",
+    "outputs": [{ "name": "", "type": "bool" }],
     "stateMutability": "view",
     "type": "function"
   }

@@ -27,6 +27,7 @@ export interface TradingViewWithPositionsProps {
   positionUpdates: PositionUpdate[];
   height?: number;
   selectedTrader?: string;
+  showAsAreaChart?: boolean;
 }
 
 interface ChartPoint {
@@ -46,10 +47,11 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
   positionUpdates,
   height = 500,
   selectedTrader,
+  showAsAreaChart = false,
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
-  const marketSeriesRef = useRef<Map<string, ISeriesApi<'Line'>>>(new Map());
+  const marketSeriesRef = useRef<Map<string, ISeriesApi<'Line'> | ISeriesApi<'Area'>>>(new Map());
   const pnlSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);
   const exposureSeriesRef = useRef<ISeriesApi<'Area'> | null>(null);
   
@@ -114,23 +116,45 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
         // Only show ETH and BTC
         if (tokenData.symbol !== 'ETH' && tokenData.symbol !== 'BTC') return;
         
-        const lineOptions: DeepPartial<LineSeriesOptions> = {
-          color: tokenColors[tokenData.symbol] || '#888888',
-          lineWidth: 2,
-          title: `${tokenData.symbol} Share`,
-          priceScaleId: 'right',
-          priceFormat: {
-            type: 'custom',
-            formatter: (price: any) => `${price.toFixed(2)}%`,
-          },
-        };
-        const series = chart.addSeries(LineSeries, lineOptions);
+        if (showAsAreaChart) {
+          const areaOptions: DeepPartial<AreaSeriesOptions> = {
+            lineColor: tokenColors[tokenData.symbol] || '#888888',
+            topColor: tokenColors[tokenData.symbol] ? `${tokenColors[tokenData.symbol]}60` : '#88888860',
+            bottomColor: tokenColors[tokenData.symbol] ? `${tokenColors[tokenData.symbol]}10` : '#88888810',
+            lineWidth: 2,
+            title: `${tokenData.symbol} Share`,
+            priceScaleId: 'right',
+            priceFormat: {
+              type: 'custom',
+              formatter: (price: any) => `${price.toFixed(2)}%`,
+            },
+          };
+          const series = chart.addSeries(AreaSeries, areaOptions);
+          
+          // Ensure data is properly sorted and deduplicated
+          const sortedData = [...tokenData.data].sort((a, b) => (a.time as number) - (b.time as number));
+          
+          series.setData(sortedData);
+          marketSeriesRef.current.set(tokenData.symbol, series);
+        } else {
+          const lineOptions: DeepPartial<LineSeriesOptions> = {
+            color: tokenColors[tokenData.symbol] || '#888888',
+            lineWidth: 2,
+            title: `${tokenData.symbol} Share`,
+            priceScaleId: 'right',
+            priceFormat: {
+              type: 'custom',
+              formatter: (price: any) => `${price.toFixed(2)}%`,
+            },
+          };
+          const series = chart.addSeries(LineSeries, lineOptions);
 
-        // Ensure data is properly sorted and deduplicated
-        const sortedData = [...tokenData.data].sort((a, b) => (a.time as number) - (b.time as number));
-        
-        series.setData(sortedData);
-        marketSeriesRef.current.set(tokenData.symbol, series);
+          // Ensure data is properly sorted and deduplicated
+          const sortedData = [...tokenData.data].sort((a, b) => (a.time as number) - (b.time as number));
+          
+          series.setData(sortedData);
+          marketSeriesRef.current.set(tokenData.symbol, series);
+        }
       });
     }
 
@@ -298,7 +322,7 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
         chart.remove();
       }
     };
-  }, [marketData, positions, positionUpdates, height, selectedTrader]);
+  }, [marketData, positions, positionUpdates, height, selectedTrader, showAsAreaChart]);
 
   return (
     <div className="relative w-full">

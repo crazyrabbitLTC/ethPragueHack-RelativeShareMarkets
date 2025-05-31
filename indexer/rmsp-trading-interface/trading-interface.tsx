@@ -152,8 +152,8 @@ export default function TradingInterface() {
             <BasketChips
               baseToken="ETH"
               tokens={selectedTokens}
-              totalPnl={positionStats?.totalPnl || mockPositionData.pnlUsd}
-              totalPnlPercent={positionStats?.totalPnlPercent || mockPositionData.pnlPercent}
+              totalPnl={positionStats?.totalPnl || 0}
+              totalPnlPercent={positionStats?.totalPnlPercent || 0}
             />
           </div>
         </div>
@@ -173,7 +173,10 @@ export default function TradingInterface() {
               <div className="w-48">
                 <TraderSelector
                   selectedTrader={selectedTrader}
-                  onChange={setSelectedTrader}
+                  onChange={(value) => {
+                    // If "all" is selected, clear the filter
+                    setSelectedTrader(value === 'all' ? undefined : value)
+                  }}
                   placeholder="All traders"
                 />
               </div>
@@ -217,6 +220,7 @@ export default function TradingInterface() {
                   positionUpdates={positionUpdates}
                   height={400}
                   selectedTrader={selectedTrader}
+                  showAsAreaChart={showAsAreaChart}
                 />
               ) : (
                 <div className="relative w-full h-[400px] bg-gray-900/30 rounded-xl border border-gray-800 flex items-center justify-center">

@@ -47,10 +47,6 @@ export function useRelativeSharesChartData(
   // Memoize token symbols to prevent unnecessary re-renders
   const tokenSymbols = useMemo(() => tokens.map(t => t.symbol).join(','), [tokens]);
 
-  console.log('📊 Chart data hook:', { 
-    useMockData, 
-    tokens: tokens.map(t => t.symbol)
-  });
 
   // Query real market share data - simplified to avoid timestamp filtering issues
   const { data, loading: queryLoading, error: queryError } = useQuery<MarketSharesResponse>(
@@ -66,16 +62,9 @@ export function useRelativeSharesChartData(
     }
   );
 
-  console.log('📊 GraphQL query state:', { 
-    loading: queryLoading, 
-    error: queryError?.message,
-    dataItems: data?.marketShares?.items?.length,
-    skip: useMockData
-  });
 
   useEffect(() => {
     if (useMockData) {
-      console.log('📊 Using mock data');
       try {
         // Generate mock data for all tokens
         const mockData = generateMultiTokenMockData(
@@ -90,10 +79,6 @@ export function useRelativeSharesChartData(
           color: TOKEN_COLORS[token.symbol] || '#999999',
         }));
 
-        console.log('📊 Mock chart data generated:', formattedData.map(d => ({ 
-          symbol: d.symbol, 
-          points: d.data.length 
-        })));
 
         setChartData(formattedData);
         setMockError(null);
@@ -102,7 +87,6 @@ export function useRelativeSharesChartData(
         setMockError(err as Error);
       }
     } else if (data?.marketShares?.items && data.marketShares.items.length > 0) {
-      console.log('📊 Processing real data:', data.marketShares.items.length, 'items');
       try {
         // Group market share data by token symbol
         const dataByToken: Record<string, LineData[]> = {};
@@ -150,11 +134,6 @@ export function useRelativeSharesChartData(
           color: TOKEN_COLORS[symbol] || '#999999',
         }));
 
-        console.log('📊 Real chart data processed:', formattedData.map(d => ({ 
-          symbol: d.symbol, 
-          points: d.data.length,
-          samplePoint: d.data[0] 
-        })));
 
         setChartData(formattedData);
       } catch (err) {
@@ -166,11 +145,6 @@ export function useRelativeSharesChartData(
   const loading = useMockData ? false : queryLoading;
   const error = useMockData ? mockError : queryError || null;
 
-  console.log('📊 Hook returning:', { 
-    loading, 
-    error: error?.message, 
-    chartDataLength: chartData.length 
-  });
 
   return { chartData, loading, error };
 } 

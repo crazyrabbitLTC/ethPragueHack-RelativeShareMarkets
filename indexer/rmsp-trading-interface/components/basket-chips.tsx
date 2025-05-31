@@ -14,6 +14,7 @@ interface BasketChipsProps {
 }
 
 export function BasketChips({ baseToken, tokens, totalPnl, totalPnlPercent }: BasketChipsProps) {
+  const hasPositions = totalPnl !== 0 || totalPnlPercent !== 0
   const isPositive = totalPnl >= 0
 
   return (
@@ -35,15 +36,23 @@ export function BasketChips({ baseToken, tokens, totalPnl, totalPnlPercent }: Ba
       {/* PnL Ticker */}
       <div
         className={`flex items-center space-x-2 px-4 py-2 rounded-lg border ${
-          isPositive
-            ? "bg-green-900/20 border-green-500/30 text-green-400"
-            : "bg-red-900/20 border-red-500/30 text-red-400"
+          hasPositions
+            ? isPositive
+              ? "bg-green-900/20 border-green-500/30 text-green-400"
+              : "bg-red-900/20 border-red-500/30 text-red-400"
+            : "bg-gray-900/20 border-gray-700/30 text-gray-500"
         }`}
       >
         <span className="text-sm font-medium">PnL:</span>
         <span className="font-bold">
-          {isPositive ? "+" : ""}${totalPnl.toLocaleString()} ({isPositive ? "+" : ""}
-          {totalPnlPercent.toFixed(2)}%)
+          {hasPositions ? (
+            <>
+              {isPositive ? "+" : ""}${totalPnl.toLocaleString()} ({isPositive ? "+" : ""}
+              {totalPnlPercent.toFixed(2)}%)
+            </>
+          ) : (
+            "No positions"
+          )}
         </span>
       </div>
     </div>

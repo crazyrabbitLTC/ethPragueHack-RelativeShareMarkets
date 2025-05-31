@@ -27,6 +27,9 @@ Complete reference for:
 - Type conversion utilities
 - GraphQL fragments for reusability
 
+### 📋 [Indexer Data Requirements](./indexer-data-requirements.md)
+Comprehensive list of data needed from the indexer
+
 ## Quick Start
 
 1. **Review the context** - Start with `project-context.md` to understand the current state
@@ -71,3 +74,16 @@ npm run dev
 ```
 
 The interface will be available at `http://localhost:3000` 
+
+## Quick Links
+
+- Frontend: http://localhost:3000
+- Ponder Indexer: http://localhost:42070
+- GraphQL Playground: http://localhost:42070/graphql
+
+## Key Features
+
+- Real-time blockchain data integration via Ponder indexer
+- TradingView charts for visualizing relative market shares
+- Position management with P&L tracking
+- Multi-token basket trading interface 

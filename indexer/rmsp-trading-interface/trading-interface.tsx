@@ -80,14 +80,6 @@ export default function TradingInterface() {
     useMockData
   );
   
-  // Debug logging
-  console.log('Chart state:', {
-    chartDataLength: chartData.length,
-    chartLoading,
-    chartError,
-    useMockData,
-    selectedTokens: selectedTokens.map(t => t.symbol)
-  });
   
   // Use the first open position for display, or mock data with live share if none
   const firstOpenPosition = positions.find(p => p.status === 'open');
@@ -155,15 +147,6 @@ export default function TradingInterface() {
           </div>
         </div>
 
-        {/* Loading states */}
-        {(chartLoading || positionsLoading) && (
-          <div className="text-center py-10">
-            <div className="inline-flex items-center gap-2">
-              <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-              Loading {chartLoading ? 'chart' : 'position'} data...
-            </div>
-          </div>
-        )}
         
         {/* Chart and Share Table */}
         <div className="space-y-6">
@@ -195,7 +178,28 @@ export default function TradingInterface() {
           <div className="grid lg:grid-cols-2 gap-6">
             {/* Chart column */}
             <div>
-              {!chartLoading && !chartError && chartData.length > 0 ? (
+              {chartLoading ? (
+                <div className="relative w-full h-[400px] bg-gray-900/30 rounded-xl border border-gray-800 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="inline-flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                      Loading chart data...
+                    </div>
+                  </div>
+                </div>
+              ) : chartError ? (
+                <div className="relative w-full h-[400px] bg-gray-900/30 rounded-xl border border-gray-800 flex items-center justify-center">
+                  <div className="text-center">
+                    <p className="text-red-500 mb-2">Error loading chart: {chartError.message}</p>
+                    <button
+                      onClick={() => setUseMockData(true)}
+                      className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors"
+                    >
+                      Use Mock Data
+                    </button>
+                  </div>
+                </div>
+              ) : chartData.length > 0 ? (
                 <TradingViewWithPositions
                   marketData={chartData}
                   positions={positions}
@@ -204,28 +208,14 @@ export default function TradingInterface() {
                   selectedTrader={selectedTrader}
                 />
               ) : (
-                chartLoading && (
-                  <div className="relative w-full h-[400px] bg-gray-900/30 rounded-xl border border-gray-800 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="inline-flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                        Loading chart data...
-                      </div>
-                    </div>
-                  </div>
-                )
-              )}
-              
-              {/* Fallback if chart data is empty and not loading/erroring */}
-              {!chartLoading && !chartError && chartData.length === 0 && !useMockData && (
                 <div className="relative w-full h-[400px] bg-gray-900/30 rounded-xl border border-gray-800 flex items-center justify-center">
                   <div className="text-center">
-                    <p className="text-gray-500 mb-2">No chart data available from indexer.</p>
+                    <p className="text-gray-500 mb-2">No chart data available.</p>
                     <button
                       onClick={() => setUseMockData(true)}
                       className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors"
                     >
-                      Switch to Mock Data
+                      Use Mock Data
                     </button>
                   </div>
                 </div>

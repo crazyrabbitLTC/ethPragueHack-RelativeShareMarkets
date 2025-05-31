@@ -9,6 +9,7 @@ import { PositionCard, type Position as PositionType } from "./components/positi
 import { ToastStack } from "./components/toast-stack"
 import { TradingPairSelector } from "./components/trading-pair-selector"
 import { RelativeSharesChart } from "./components/chart/RelativeSharesChart"
+import { LivePriceDisplay } from "./components/live-price-display"
 import { mockTokensData, mockPositionData } from "./data/mock-data"
 import { useLatestPrices } from "./lib/hooks/usePrices"
 import { useAllPositions, transformPositionForUI } from "./lib/hooks/usePositions"
@@ -32,7 +33,6 @@ export default function TradingInterface() {
     { 
       symbol: 'ETH', 
       currentShare: 50, 
-      changePercent: 0,
       weight: 50,
       change24h: 0,
       volatility: 15.2
@@ -40,7 +40,6 @@ export default function TradingInterface() {
     { 
       symbol: 'BTC', 
       currentShare: 50, 
-      changePercent: 0,
       weight: 50,
       change24h: 0,
       volatility: 12.8
@@ -121,6 +120,9 @@ export default function TradingInterface() {
             />
           </div>
         </div>
+
+        {/* Live Price Display */}
+        <LivePriceDisplay className="w-full" />
 
         {/* Loading states */}
         {(chartLoading || positionsLoading) && (

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@apollo/client';
 import { LineData, Time } from 'lightweight-charts';
 import { GET_LATEST_MARKET_SHARES } from '@/lib/graphql/queries';
@@ -43,6 +43,9 @@ export function useRelativeSharesChartData(
 } {
   const [chartData, setChartData] = useState<TokenChartData[]>([]);
   const [mockError, setMockError] = useState<Error | null>(null);
+
+  // Memoize token symbols to prevent unnecessary re-renders
+  const tokenSymbols = useMemo(() => tokens.map(t => t.symbol).join(','), [tokens]);
 
   console.log('📊 Chart data hook:', { 
     useMockData, 
@@ -98,7 +101,7 @@ export function useRelativeSharesChartData(
         console.error('📊 Mock data generation failed:', err);
         setMockError(err as Error);
       }
-    } else if (data?.marketShares?.items) {
+    } else if (data?.marketShares?.items && data.marketShares.items.length > 0) {
       console.log('📊 Processing real data:', data.marketShares.items.length, 'items');
       try {
         // Group market share data by token symbol
@@ -140,10 +143,8 @@ export function useRelativeSharesChartData(
       } catch (err) {
         console.error('📊 Error processing market share data:', err);
       }
-    } else if (!queryLoading && !useMockData) {
-      console.log('📊 No data returned from query');
     }
-  }, [data, tokens, useMockData, queryLoading]);
+  }, [data, tokenSymbols, useMockData]); // Using tokenSymbols instead of tokens array
 
   const loading = useMockData ? false : queryLoading;
   const error = useMockData ? mockError : queryError || null;

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { HeaderBar } from "./components/header-bar"
 import { BasketChips } from "./components/basket-chips"
 import { ShareTable } from "./components/share-table"
@@ -27,8 +27,8 @@ export default function TradingInterface() {
   // Fetch real positions data
   const { positions, stats: positionStats, loading: positionsLoading, error: positionsError } = useAllPositions(10);
   
-  // Use real tokens from the indexer (ETH/BTC for SimplePerpV2)
-  const realTokensData = [
+  // Use real tokens from the indexer (ETH/BTC for SimplePerpV2) - memoized to prevent re-renders
+  const realTokensData = useMemo(() => [
     { 
       symbol: 'ETH', 
       currentShare: 50, 
@@ -45,11 +45,17 @@ export default function TradingInterface() {
       change24h: 0,
       volatility: 12.8
     },
-  ];
+  ], []);
+  
+  // Memoize the tokens selection to prevent unnecessary re-renders
+  const selectedTokens = useMemo(() => 
+    useMockData ? mockTokensData : realTokensData,
+    [useMockData, realTokensData]
+  );
   
   // Get chart data - real data by default, with fallback to mock
   const { chartData, loading: chartLoading, error: chartError } = useRelativeSharesChartData(
-    useMockData ? mockTokensData : realTokensData,
+    selectedTokens,
     useMockData
   );
   
@@ -109,7 +115,7 @@ export default function TradingInterface() {
           <div className="w-full md:w-auto">
             <BasketChips
               baseToken="ETH"
-              tokens={useMockData ? mockTokensData : realTokensData}
+              tokens={selectedTokens}
               totalPnl={positionStats?.totalPnl || mockPositionData.pnlUsd}
               totalPnlPercent={positionStats?.totalPnlPercent || mockPositionData.pnlPercent}
             />
@@ -161,12 +167,12 @@ export default function TradingInterface() {
           </div>
         )}
 
-        <ShareTable tokens={useMockData ? mockTokensData : realTokensData} />
+        <ShareTable tokens={selectedTokens} />
 
         <div className="grid lg:grid-cols-2 gap-6">
           <OrderForm
             baseToken="ETH"
-            basketTokens={useMockData ? mockTokensData : realTokensData}
+            basketTokens={selectedTokens}
           />
           <PositionCard
             initialPosition={displayPosition}

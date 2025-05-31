@@ -3,15 +3,16 @@
 import { useState, useEffect } from "react"
 import { HeaderBar } from "./components/header-bar"
 import { BasketChips } from "./components/basket-chips"
-import { ChartPlaceholder } from "./components/chart-placeholder"
-import { ShareTable } from "./components/share-table" // Ensure Token is exported
+import { ShareTable } from "./components/share-table"
 import { OrderForm } from "./components/order-form"
-import { PositionCard, type Position } from "./components/position-card" // Ensure Position is exported
+import { PositionCard, type Position as PositionType } from "./components/position-card"
 import { ToastStack } from "./components/toast-stack"
 import { TradingPairSelector } from "./components/trading-pair-selector"
+import { TradingViewChart } from "./components/chart/TradingViewChart"
 import { mockTokensData, mockPositionData } from "./data/mock-data"
 import { useLatestPrices } from "./lib/hooks/usePrices"
 import { useAllPositions, transformPositionForUI } from "./lib/hooks/usePositions"
+import { useChartData } from "./lib/hooks/useChartData";
 // import { useToasts } from "./hooks/useToasts"; // If toasts are managed globally or triggered here
 
 export default function TradingInterface() {
@@ -22,7 +23,8 @@ export default function TradingInterface() {
   const displayBlockNumber = latestBlockNumber || 18234567; // Fallback to default
 
   // Fetch real positions data
-  const { positions, stats } = useAllPositions(10);
+  const { positions, stats: positionStats } = useAllPositions(10);
+  const { data: chartData, loading: chartLoading, error: chartError } = useChartData();
   
   // Use the first open position for display, or mock data if none
   const firstOpenPosition = positions.find(p => p.status === 'open');
@@ -32,7 +34,7 @@ export default function TradingInterface() {
 
   // Example of how OrderForm might interact with PositionCard after a successful order
   // This would typically involve a shared state/context or a callback system
-  const handleOrderSuccess = (newPosition: Position) => {
+  const handleOrderSuccess = (newPosition: PositionType) => {
     // This is a placeholder. In a real app, you'd update the position
     // through a shared state manager or by refetching data.
     // For now, we'll assume usePositionManagement hook handles its own state or gets updated.
@@ -55,13 +57,27 @@ export default function TradingInterface() {
             <BasketChips
               baseToken="ETH"
               tokens={mockTokensData}
-              totalPnl={stats?.totalPnl || mockPositionData.pnlUsd}
-              totalPnlPercent={stats?.totalPnlPercent || mockPositionData.pnlPercent}
+              totalPnl={positionStats?.totalPnl || mockPositionData.pnlUsd}
+              totalPnlPercent={positionStats?.totalPnlPercent || mockPositionData.pnlPercent}
             />
           </div>
         </div>
 
-        <ChartPlaceholder baseToken="ETH" currentShare={displayPosition.currentShare} />
+        {chartLoading && <div className="text-center py-10">Loading chart data...</div>}
+        {chartError && <div className="text-center py-10 text-red-500">Error loading chart: {chartError.message}</div>}
+        {!chartLoading && !chartError && chartData.length > 0 && (
+          <TradingViewChart 
+            data={chartData} 
+            baseToken="ETH" 
+            currentShare={displayPosition.currentShare} 
+          />
+        )}
+        {/* Fallback if chart data is empty and not loading/erroring */}
+        {!chartLoading && !chartError && chartData.length === 0 && (
+            <div className="relative w-full aspect-video bg-gray-900/30 rounded-xl border border-gray-800 flex items-center justify-center">
+                <p className="text-gray-500">No chart data available.</p>
+            </div>
+        )}
 
         <ShareTable tokens={mockTokensData} />
 
@@ -69,7 +85,6 @@ export default function TradingInterface() {
           <OrderForm
             baseToken="ETH"
             basketTokens={mockTokensData}
-            // onSubmitSuccess={handleOrderSuccess} // Pass callback
           />
           <PositionCard
             initialPosition={displayPosition}

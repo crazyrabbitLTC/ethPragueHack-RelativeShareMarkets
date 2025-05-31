@@ -15,6 +15,7 @@ import { useLatestPrices } from "./lib/hooks/usePrices"
 import { useAllPositions, useUserPositions, transformPositionForUI } from "./lib/hooks/usePositions"
 import { usePositionUpdates } from "./lib/hooks/usePositionUpdates"
 import { useRelativeSharesChartData } from "./lib/hooks/useRelativeSharesChartData"
+import { useHistoricalSharesChartData } from "./lib/hooks/useHistoricalSharesChartData"
 import { useLivePricesContext } from "./lib/contexts/LivePricesContext"
 // import { useToasts } from "./hooks/useToasts"; // If toasts are managed globally or triggered here
 
@@ -74,11 +75,19 @@ export default function TradingInterface() {
     [useMockData, realTokensData]
   );
   
-  // Get chart data - real data by default, with fallback to mock
-  const { chartData, loading: chartLoading, error: chartError } = useRelativeSharesChartData(
+  // Get chart data - use historical prices for chart
+  const { chartData: historicalChartData, loading: historicalLoading, error: historicalError } = useHistoricalSharesChartData();
+  
+  // Fallback to mock data if needed
+  const { chartData: mockChartData, loading: mockLoading, error: mockError } = useRelativeSharesChartData(
     selectedTokens,
-    useMockData
+    true // Always use mock for this hook
   );
+  
+  // Use historical data if available, otherwise use mock
+  const chartData = (historicalChartData && historicalChartData.length > 0) ? historicalChartData : mockChartData;
+  const chartLoading = historicalLoading;
+  const chartError = historicalError;
   
   
   // Use the first open position for display, or mock data with live share if none

@@ -29,8 +29,22 @@ export default function TradingInterface() {
   
   // Use real tokens from the indexer (ETH/BTC for SimplePerpV2)
   const realTokensData = [
-    { symbol: 'ETH', currentShare: 50, changePercent: 0 },
-    { symbol: 'BTC', currentShare: 50, changePercent: 0 },
+    { 
+      symbol: 'ETH', 
+      currentShare: 50, 
+      changePercent: 0,
+      weight: 50,
+      change24h: 0,
+      volatility: 15.2
+    },
+    { 
+      symbol: 'BTC', 
+      currentShare: 50, 
+      changePercent: 0,
+      weight: 50,
+      change24h: 0,
+      volatility: 12.8
+    },
   ];
   
   // Get chart data - real data by default, with fallback to mock

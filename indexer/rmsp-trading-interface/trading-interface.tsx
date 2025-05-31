@@ -9,10 +9,9 @@ import { OrderForm } from "./components/order-form"
 import { PositionCard, type Position } from "./components/position-card" // Ensure Position is exported
 import { ToastStack } from "./components/toast-stack"
 import { TradingPairSelector } from "./components/trading-pair-selector"
-import { TestConnection } from "./components/test-connection"
 import { mockTokensData, mockPositionData } from "./data/mock-data"
 import { useLatestPrices } from "./lib/hooks/usePrices"
-import { useAllPositions } from "./lib/hooks/usePositions"
+import { useAllPositions, transformPositionForUI } from "./lib/hooks/usePositions"
 // import { useToasts } from "./hooks/useToasts"; // If toasts are managed globally or triggered here
 
 export default function TradingInterface() {
@@ -24,6 +23,12 @@ export default function TradingInterface() {
 
   // Fetch real positions data
   const { positions, stats } = useAllPositions(10);
+  
+  // Use the first open position for display, or mock data if none
+  const firstOpenPosition = positions.find(p => p.status === 'open');
+  const displayPosition = firstOpenPosition 
+    ? transformPositionForUI(firstOpenPosition)
+    : mockPositionData;
 
   // Example of how OrderForm might interact with PositionCard after a successful order
   // This would typically involve a shared state/context or a callback system
@@ -44,22 +49,19 @@ export default function TradingInterface() {
       />
 
       <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* Test Connection Component */}
-        <TestConnection />
-        
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <TradingPairSelector />
           <div className="w-full md:w-auto">
             <BasketChips
               baseToken="ETH"
               tokens={mockTokensData}
-              totalPnl={mockPositionData.pnlUsd} // This might come from position state
-              totalPnlPercent={mockPositionData.pnlPercent} // This might come from position state
+              totalPnl={stats?.totalPnl || mockPositionData.pnlUsd}
+              totalPnlPercent={stats?.totalPnlPercent || mockPositionData.pnlPercent}
             />
           </div>
         </div>
 
-        <ChartPlaceholder baseToken="ETH" currentShare={mockPositionData.currentShare} />
+        <ChartPlaceholder baseToken="ETH" currentShare={displayPosition.currentShare} />
 
         <ShareTable tokens={mockTokensData} />
 
@@ -70,7 +72,7 @@ export default function TradingInterface() {
             // onSubmitSuccess={handleOrderSuccess} // Pass callback
           />
           <PositionCard
-            initialPosition={mockPositionData}
+            initialPosition={displayPosition}
             // onAddCollateralApi={async (amount) => console.log("API: Add collateral", amount)}
           />
         </div>

@@ -10,8 +10,41 @@ export const formatBigInt = (value: string | null | undefined, decimals: number 
   if (!value) return 0;
   try {
     const bigIntValue = BigInt(value);
+    
+    // Try different decimal scales to see which makes sense
+    // For shares/percentages, might be 18 decimals (e.g., 0.05 = 5%)
+    // For USD values, might be 6 or 8 decimals
+    if (decimals === 18) {
+      // Check if this might be a USD value with fewer decimals
+      const value6Decimals = Number(bigIntValue) / 1e6;
+      const value8Decimals = Number(bigIntValue) / 1e8;
+      const value18Decimals = Number(bigIntValue) / 1e18;
+      
+      // If the 6 or 8 decimal value looks more reasonable, use it
+      if (value6Decimals >= 0.01 && value6Decimals < 1e9) {
+        console.log('Using 6 decimals for value:', value, '→', value6Decimals);
+        return value6Decimals;
+      } else if (value8Decimals >= 0.01 && value8Decimals < 1e9) {
+        console.log('Using 8 decimals for value:', value, '→', value8Decimals);
+        return value8Decimals;
+      }
+    }
+    
     const divisor = BigInt(10 ** decimals);
-    return Number(bigIntValue) / Number(divisor);
+    const result = Number(bigIntValue) / Number(divisor);
+    
+    // Debug logging - remove in production
+    if (bigIntValue > 0n) {
+      console.log('formatBigInt debug:', {
+        input: value,
+        bigInt: bigIntValue.toString(),
+        decimals,
+        divisor: divisor.toString(),
+        result
+      });
+    }
+    
+    return result;
   } catch (error) {
     console.error('Error formatting BigInt:', error);
     return 0;

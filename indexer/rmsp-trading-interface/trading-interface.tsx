@@ -8,7 +8,6 @@ import { OrderForm } from "./components/order-form"
 import { PositionCard, type Position as PositionType } from "./components/position-card"
 import { ToastStack } from "./components/toast-stack"
 import { TradingPairSelector } from "./components/trading-pair-selector"
-import { RelativeSharesChart } from "./components/chart/RelativeSharesChart"
 import { TradingViewWithPositions } from "./components/chart/TradingViewWithPositions"
 import { TraderSelector } from "./components/trader-selector"
 import { mockTokensData, mockPositionData } from "./data/mock-data"
@@ -24,7 +23,6 @@ export default function TradingInterface() {
   const [showAsAreaChart, setShowAsAreaChart] = useState(false)
   const [useMockData, setUseMockData] = useState(false) // Use real indexer data by default
   const [selectedTrader, setSelectedTrader] = useState<string | undefined>(undefined)
-  const [useEnhancedChart, setUseEnhancedChart] = useState(false) // Start with simple chart by default
   
   // Fetch real block number from indexer
   const { latestBlockNumber } = useLatestPrices(1, 5000); // Poll every 5 seconds
@@ -81,6 +79,15 @@ export default function TradingInterface() {
     selectedTokens,
     useMockData
   );
+  
+  // Debug logging
+  console.log('Chart state:', {
+    chartDataLength: chartData.length,
+    chartLoading,
+    chartError,
+    useMockData,
+    selectedTokens: selectedTokens.map(t => t.symbol)
+  });
   
   // Use the first open position for display, or mock data with live share if none
   const firstOpenPosition = positions.find(p => p.status === 'open');
@@ -160,32 +167,22 @@ export default function TradingInterface() {
         
         {/* Chart and Share Table */}
         <div className="space-y-6">
-          {/* Chart toggle buttons */}
+          {/* Chart controls */}
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setUseEnhancedChart(!useEnhancedChart)}
+                onClick={() => setShowAsAreaChart(!showAsAreaChart)}
                 className="px-3 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-700 transition-colors"
               >
-                {useEnhancedChart ? 'Simple Chart' : 'Enhanced Chart'}
+                {showAsAreaChart ? 'Show Lines' : 'Show Area'}
               </button>
-              {!useEnhancedChart && (
-                <button
-                  onClick={() => setShowAsAreaChart(!showAsAreaChart)}
-                  className="px-3 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-700 transition-colors"
-                >
-                  {showAsAreaChart ? 'Show Lines' : 'Show Area'}
-                </button>
-              )}
-              {useEnhancedChart && (
-                <div className="w-48">
-                  <TraderSelector
-                    selectedTrader={selectedTrader}
-                    onChange={setSelectedTrader}
-                    placeholder="All traders"
-                  />
-                </div>
-              )}
+              <div className="w-48">
+                <TraderSelector
+                  selectedTrader={selectedTrader}
+                  onChange={setSelectedTrader}
+                  placeholder="All traders"
+                />
+              </div>
             </div>
             {selectedTrader && (
               <div className="text-sm text-gray-400">
@@ -194,59 +191,52 @@ export default function TradingInterface() {
             )}
           </div>
           
-          {/* Enhanced Chart with Positions */}
-          {useEnhancedChart && !chartLoading && !chartError && chartData.length > 0 && (
-            <TradingViewWithPositions
-              marketData={chartData}
-              positions={positions}
-              positionUpdates={positionUpdates}
-              height={500}
-              selectedTrader={selectedTrader}
-            />
-          )}
-          
-          {/* Simple Chart and Share Table in two columns */}
-          {!useEnhancedChart && (
-            <div className="grid lg:grid-cols-2 gap-6">
-              {/* Chart column */}
-              <div>
-                {!chartLoading && !chartError && chartData.length > 0 && (
-                  <RelativeSharesChart 
-                    data={chartData}
-                    height={300}
-                    showAsArea={showAsAreaChart}
-                  />
-                )}
-                
-                {/* Fallback if chart data is empty and not loading/erroring */}
-                {!chartLoading && !chartError && chartData.length === 0 && !useMockData && (
-                  <div className="relative w-full h-[300px] bg-gray-900/30 rounded-xl border border-gray-800 flex items-center justify-center">
+          {/* Main Chart with optional positions */}
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Chart column */}
+            <div>
+              {!chartLoading && !chartError && chartData.length > 0 ? (
+                <TradingViewWithPositions
+                  marketData={chartData}
+                  positions={positions}
+                  positionUpdates={positionUpdates}
+                  height={400}
+                  selectedTrader={selectedTrader}
+                />
+              ) : (
+                chartLoading && (
+                  <div className="relative w-full h-[400px] bg-gray-900/30 rounded-xl border border-gray-800 flex items-center justify-center">
                     <div className="text-center">
-                      <p className="text-gray-500 mb-2">No chart data available from indexer.</p>
-                      <button
-                        onClick={() => setUseMockData(true)}
-                        className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors"
-                      >
-                        Switch to Mock Data
-                      </button>
+                      <div className="inline-flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        Loading chart data...
+                      </div>
                     </div>
                   </div>
-                )}
-              </div>
-
-              {/* Share Table column */}
-              <div>
-                <ShareTable tokens={selectedTokens} />
-              </div>
+                )
+              )}
+              
+              {/* Fallback if chart data is empty and not loading/erroring */}
+              {!chartLoading && !chartError && chartData.length === 0 && !useMockData && (
+                <div className="relative w-full h-[400px] bg-gray-900/30 rounded-xl border border-gray-800 flex items-center justify-center">
+                  <div className="text-center">
+                    <p className="text-gray-500 mb-2">No chart data available from indexer.</p>
+                    <button
+                      onClick={() => setUseMockData(true)}
+                      className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors"
+                    >
+                      Switch to Mock Data
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-          
-          {/* Share Table for enhanced chart (full width) */}
-          {useEnhancedChart && (
-            <div className="w-full">
+
+            {/* Share Table column */}
+            <div>
               <ShareTable tokens={selectedTokens} />
             </div>
-          )}
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">

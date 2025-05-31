@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
 import { LineData, Time } from 'lightweight-charts';
-import { GET_ALL_MARKET_SHARES } from '@/lib/graphql/queries';
+import { GET_LATEST_MARKET_SHARES } from '@/lib/graphql/queries';
 import { MarketSharesResponse } from '@/lib/graphql/types';
 import { generateMultiTokenMockData } from './useChartData';
 
@@ -44,24 +44,17 @@ export function useRelativeSharesChartData(
   const [chartData, setChartData] = useState<TokenChartData[]>([]);
   const [mockError, setMockError] = useState<Error | null>(null);
 
-  // Calculate time range for the last 24 hours worth of data
-  const now = Math.floor(Date.now() / 1000);
-  const oneDayAgo = now - (24 * 60 * 60);
-
   console.log('📊 Chart data hook:', { 
     useMockData, 
-    timeRange: { from: oneDayAgo, to: now },
     tokens: tokens.map(t => t.symbol)
   });
 
-  // Query real market share data
+  // Query real market share data - simplified to avoid timestamp filtering issues
   const { data, loading: queryLoading, error: queryError } = useQuery<MarketSharesResponse>(
-    GET_ALL_MARKET_SHARES,
+    GET_LATEST_MARKET_SHARES,
     {
       variables: {
-        from: oneDayAgo,
-        to: now,
-        limit: 1000, // Get plenty of data points
+        limit: 100, // Get recent data points
       },
       skip: useMockData,
       pollInterval: 10000, // Refresh every 10 seconds

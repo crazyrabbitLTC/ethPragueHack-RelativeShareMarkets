@@ -161,7 +161,9 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
       pnlSeries.setData(pnlData);
       pnlSeriesRef.current = pnlSeries;
 
-      // Add position markers
+      // Collect all markers for the ETH series
+      const ethMarkers: any[] = [];
+      
       traderPositions.forEach(position => {
         const isLong = position.isLong;
         const entryTime = position.openedAt;
@@ -169,38 +171,34 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
         const entryShare = Number(position.entryShares) / 1e18;
         const exitShare = position.exitShares ? Number(position.exitShares) / 1e18 : null;
 
-        // Find the appropriate series (ETH for now)
-        const ethSeries = marketSeriesRef.current.get('ETH');
-        if (ethSeries) {
-          // Entry marker
-          ethSeries.setMarkers([
-            ...ethSeries.markers() || [],
-            {
-              time: entryTime as Time,
-              position: 'aboveBar' as SeriesMarkerPosition,
-              color: isLong ? '#26a69a' : '#ef5350',
-              shape: isLong ? 'arrowUp' as SeriesMarkerShape : 'arrowDown' as SeriesMarkerShape,
-              text: `${isLong ? 'L' : 'S'} Entry`,
-              size: 2,
-            }
-          ]);
+        // Entry marker
+        ethMarkers.push({
+          time: entryTime as Time,
+          position: 'aboveBar' as SeriesMarkerPosition,
+          color: isLong ? '#26a69a' : '#ef5350',
+          shape: isLong ? 'arrowUp' as SeriesMarkerShape : 'arrowDown' as SeriesMarkerShape,
+          text: `${isLong ? 'L' : 'S'}`,
+          size: 2,
+        });
 
-          // Exit marker if position is closed
-          if (exitTime && exitShare !== null) {
-            ethSeries.setMarkers([
-              ...ethSeries.markers() || [],
-              {
-                time: exitTime as Time,
-                position: 'belowBar' as SeriesMarkerPosition,
-                color: isLong ? '#26a69a' : '#ef5350',
-                shape: 'square' as SeriesMarkerShape,
-                text: `${isLong ? 'L' : 'S'} Exit`,
-                size: 2,
-              }
-            ]);
-          }
+        // Exit marker if position is closed
+        if (exitTime && exitShare !== null) {
+          ethMarkers.push({
+            time: exitTime as Time,
+            position: 'belowBar' as SeriesMarkerPosition,
+            color: isLong ? '#26a69a' : '#ef5350',
+            shape: 'square' as SeriesMarkerShape,
+            text: `${isLong ? 'L' : 'S'} Exit`,
+            size: 2,
+          });
         }
       });
+
+      // Set all markers at once for the ETH series
+      const ethSeries = marketSeriesRef.current.get('ETH');
+      if (ethSeries && ethMarkers.length > 0) {
+        ethSeries.setMarkers(ethMarkers);
+      }
 
       // Add exposure area (shaded regions for open positions)
       const exposureData: ChartPoint[] = [];

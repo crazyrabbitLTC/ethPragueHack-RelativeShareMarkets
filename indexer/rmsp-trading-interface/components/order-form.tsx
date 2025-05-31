@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
-import { useOrderForm } from "../hooks/useOrderForm" // Ensure OrderSide is exported
-import type { Token } from "./share-table" // Assuming Token type is exported or defined globally
-// import type { Position } from "./position-card"; // If onSubmitSuccess returns a Position
+import { useAccount } from 'wagmi'
+import { useUSDC, useTrading, useUserPosition } from '@/lib/hooks/useContracts'
+import { useState } from 'react'
+import type { Token } from "./share-table"
 
 interface OrderFormProps {
   baseToken: string
@@ -15,32 +16,78 @@ interface OrderFormProps {
 }
 
 export function OrderForm({ baseToken, basketTokens }: OrderFormProps) {
-  const {
-    side,
-    setSide,
-    notional,
-    setNotional,
-    leverage,
-    setLeverage,
-    isSubmitting,
-    notionalValue,
-    initialMargin,
-    liquidationPrice,
-    handleSubmit,
-    orderButtonText,
-  } = useOrderForm({ baseToken })
+  const { isConnected } = useAccount();
+  const { 
+    balance, 
+    balanceFormatted, 
+    needsApproval, 
+    airdrop, 
+    approveMax, 
+    isAirdropping,
+    isApproving 
+  } = useUSDC();
+  const { openPosition, isOpening } = useTrading();
+  const { position } = useUserPosition();
+  
+  const [side, setSide] = useState<'long' | 'short'>('long');
+  const [notional, setNotional] = useState('');
+  const [leverage, setLeverage] = useState([1]);
 
-  const handleFormSubmit = async () => {
-    await handleSubmit()
-    // if (onSubmitSuccess && !isSubmitting) { // Check isSubmitting if it's not reset in hook
-    //   // This is a placeholder. The actual new position data would come from the API response
-    //   // onSubmitSuccess({ ...mockPositionData, side, notional: notionalValue, leverage: leverage[0] });
-    // }
-  }
+  const notionalValue = parseFloat(notional) || 0;
+  const leverageValue = leverage[0];
+  const initialMargin = notionalValue / leverageValue;
+  const hasInsufficientBalance = notionalValue > parseFloat(balanceFormatted);
+
+  const handleSubmit = async () => {
+    if (!notional || notionalValue <= 0) return;
+    await openPosition(notional, side === 'long');
+  };
+
+  const getButtonText = () => {
+    if (!isConnected) return "Connect Wallet";
+    if (position.hasPosition) return "Close Existing Position First";
+    if (hasInsufficientBalance) return "Insufficient Balance";
+    if (needsApproval) return "Approve USDC First";
+    if (isOpening) return "Opening Position...";
+    return `Open ${side === 'long' ? 'Long' : 'Short'} ${baseToken} Position`;
+  };
+
+  const isButtonDisabled = !isConnected || position.hasPosition || hasInsufficientBalance || needsApproval || isOpening || !notional;
 
   return (
     <div className="bg-gray-900/30 rounded-xl border border-gray-800 p-6 space-y-6">
-      <h3 className="text-lg font-semibold">Open Position</h3>
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">Open Position</h3>
+        {isConnected && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-400">
+              Balance: <span className="text-white font-medium">{parseFloat(balanceFormatted).toFixed(2)} USDC</span>
+            </span>
+            {balance === 0n && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={airdrop}
+                disabled={isAirdropping}
+                className="text-xs"
+              >
+                {isAirdropping ? "Airdropping..." : "Get Test USDC"}
+              </Button>
+            )}
+            {needsApproval && balance > 0n && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={approveMax}
+                disabled={isApproving}
+                className="text-xs"
+              >
+                {isApproving ? "Approving..." : "Approve USDC"}
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
       <div className="space-y-2">
         <Label className="text-gray-300">Side</Label>
         <div className="flex space-x-2">
@@ -90,16 +137,16 @@ export function OrderForm({ baseToken, basketTokens }: OrderFormProps) {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-400">Est. Liquidation:</span>
-            <span className="font-medium text-red-400">{liquidationPrice}%</span>
+            <span className="font-medium text-red-400">~{((1 - 1/leverageValue) * 100).toFixed(1)}%</span>
           </div>
         </div>
       )}
       <Button
-        onClick={handleFormSubmit}
-        disabled={!notionalValue || isSubmitting}
-        className={`w-full h-12 font-semibold ${side === "long" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"} ${isSubmitting ? "animate-pulse" : ""}`}
+        onClick={handleSubmit}
+        disabled={isButtonDisabled}
+        className={`w-full h-12 font-semibold ${side === "long" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"} ${isOpening ? "animate-pulse" : ""}`}
       >
-        {orderButtonText}
+        {getButtonText()}
       </Button>
     </div>
   )

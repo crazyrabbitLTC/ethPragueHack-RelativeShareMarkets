@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
 import { Wifi, WifiOff } from "lucide-react"
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 interface HeaderBarProps {
   blockNumber: number
   isConnected: boolean
-  onConnect: () => void
+  onConnect?: () => void // Made optional since we'll use RainbowKit
 }
 
 export function HeaderBar({ blockNumber, isConnected, onConnect }: HeaderBarProps) {
@@ -42,16 +42,7 @@ export function HeaderBar({ blockNumber, isConnected, onConnect }: HeaderBarProp
           </div>
 
           {/* Wallet Connect */}
-          <Button
-            onClick={onConnect}
-            variant={isConnected ? "outline" : "default"}
-            className={`relative ${isConnected ? "border-green-500 text-green-400" : "bg-blue-600 hover:bg-blue-700"}`}
-          >
-            <div
-              className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${isConnected ? "bg-green-400" : "bg-red-400"} animate-pulse`}
-            />
-            {isConnected ? "Connected" : "Connect Wallet"}
-          </Button>
+          <ConnectButton />
         </div>
       </div>
     </header>

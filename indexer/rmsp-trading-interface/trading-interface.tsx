@@ -6,6 +6,7 @@ import { BasketChips } from "./components/basket-chips"
 import { ShareTable } from "./components/share-table"
 import { OrderForm } from "./components/order-form"
 import { PositionCard, type Position as PositionType } from "./components/position-card"
+import { PositionCardV2 } from "./components/position-card-v2"
 import { ToastStack } from "./components/toast-stack"
 import { TradingPairSelector } from "./components/trading-pair-selector"
 import { TradingViewWithPositions } from "./components/chart/TradingViewWithPositions"
@@ -243,10 +244,7 @@ export default function TradingInterface() {
             baseToken="ETH"
             basketTokens={selectedTokens}
           />
-          <PositionCard
-            initialPosition={displayPosition}
-            // onAddCollateralApi={async (amount) => console.log("API: Add collateral", amount)}
-          />
+          <PositionCardV2 />
         </div>
       </main>
 

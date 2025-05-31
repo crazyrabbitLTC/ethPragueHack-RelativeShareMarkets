@@ -39,10 +39,35 @@ Complete reference for:
 - **Tech Stack**: Next.js 15, React 19, TypeScript, Tailwind CSS
 - **Current State**: UI built with mock data, ready for integration
 
-## Next Steps
+## Progress Update (As of latest commit)
 
-1. Install dependencies and run the interface
-2. Set up GraphQL client (Apollo or urql)
-3. Start replacing mock data with real queries
+### ✅ Completed
+- GraphQL integration with Apollo Client
+- Successfully fetching real positions from indexer
+- Real-time block number updates from blockchain
+- Position data transformation for UI
+- Error handling and loading states
+
+### 🚧 In Progress
+- Decimal conversion for proper value display
+- TradingView chart integration
+- Real-time price updates
+
+### 📋 Next Steps
+
+1. ~~Install dependencies and run the interface~~ ✅
+2. ~~Set up GraphQL client (Apollo or urql)~~ ✅
+3. ~~Start replacing mock data with real queries~~ ✅ (Partial)
 4. Implement TradingView charts
-5. Add real-time updates 
+5. Add real-time updates
+6. Complete smart contract integration
+
+## Running the Interface
+
+```bash
+cd indexer/rmsp-trading-interface
+npm install --legacy-peer-deps
+npm run dev
+```
+
+The interface will be available at `http://localhost:3000` 

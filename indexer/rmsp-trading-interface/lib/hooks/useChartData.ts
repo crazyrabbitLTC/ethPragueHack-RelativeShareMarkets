@@ -1,44 +1,51 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@apollo/client';
 import { LineData, Time } from 'lightweight-charts';
+import { GET_POSITION_UPDATES_FOR_CHART } from '@/lib/graphql/queries';
+import { formatBigInt } from '@/lib/utils/formatters';
 
-// Generates mock time-series data for the chart
-const generateMockChartData = (points = 100): LineData[] => {
-  const data: LineData[] = [];
-  let value = 50;
-  const startTime = Math.floor(Date.now() / 1000) - points * 60 * 60; // Start `points` hours ago
+interface PositionUpdateItem {
+  id: string;
+  timestamp: number;
+  currentShare: string; // BigInt as string
+  positionId: string;
+}
 
-  for (let i = 0; i < points; i++) {
-    const time = (startTime + i * 60 * 60) as Time; // Increment by 1 hour
-    value += Math.random() * 4 - 2; // Random walk
-    value = Math.max(10, Math.min(90, value)); // Clamp between 10 and 90
-    data.push({ time, value });
-  }
-  return data;
-};
+interface PositionUpdatesForChartResponse {
+  positionUpdates: {
+    items: PositionUpdateItem[];
+  };
+}
 
-export function useChartData() {
+// TODO: Make positionId dynamic, possibly passed as a prop or from context
+const HARDCODED_POSITION_ID = '0xA34dC124952EdAF7229AAe05DF0955231a8a9e2B-ETH-BTC-1748620272';
+
+export function useChartData(positionId: string = HARDCODED_POSITION_ID, limit: number = 1000) {
+  const { data: queryData, loading, error } = useQuery<PositionUpdatesForChartResponse>(
+    GET_POSITION_UPDATES_FOR_CHART,
+    {
+      variables: { 
+        positionId, 
+        limit,
+        // offset: 0, // Add if pagination is needed
+      },
+      skip: !positionId, // Skip query if no positionId is provided
+      pollInterval: 30000, // Poll for new updates every 30 seconds
+    }
+  );
+
   const [chartData, setChartData] = useState<LineData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    // Simulate fetching data
-    setLoading(true);
-    try {
-      const mockData = generateMockChartData(24 * 7); // 7 days of hourly data
-      setChartData(mockData);
-      setLoading(false);
-    } catch (e) {
-      setError(e instanceof Error ? e : new Error('Failed to generate chart data'));
-      setLoading(false);
+    if (queryData?.positionUpdates?.items) {
+      const transformedData = queryData.positionUpdates.items.map(update => ({
+        time: update.timestamp as Time,
+        // currentShare is a percentage * 10^18. To display as 0-100, divide by 10^16.
+        value: formatBigInt(update.currentShare, 16), 
+      }));
+      setChartData(transformedData);
     }
-  }, []);
-
-  // TODO: Replace with actual data fetching from the indexer
-  // This will involve:
-  // 1. Querying `priceUpdates` or a new entity that stores historical share prices.
-  // 2. Transforming the data into the LineData[] format.
-  // 3. Handling loading and error states from the GraphQL query.
+  }, [queryData]);
 
   return { data: chartData, loading, error };
 } 

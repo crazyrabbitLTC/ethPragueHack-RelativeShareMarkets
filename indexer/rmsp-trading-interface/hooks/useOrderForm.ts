@@ -1,5 +1,5 @@
 "use client"
-import { useState, useCallback } from "react"
+import { useState, useCallback, useMemo } from "react"
 
 export type OrderSide = "long" | "short"
 
@@ -23,13 +23,24 @@ export function useOrderForm({ initialSide = "long", initialLeverage = 1, baseTo
   const [leverage, setLeverage] = useState([initialLeverage])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const notionalValue = Number.parseFloat(notional) || 0
-  const leverageValue = leverage[0]
+  // Memoize computed values to prevent unnecessary re-renders
+  const notionalValue = useMemo(() => Number.parseFloat(notional) || 0, [notional])
+  const leverageValue = useMemo(() => leverage[0], [leverage])
 
-  // These calculations could also be moved to a utility if they become complex
-  const initialMargin = notionalValue > 0 && leverageValue > 0 ? notionalValue / leverageValue : 0
+  // Memoize calculations to prevent re-computation on every render
+  const initialMargin = useMemo(() => {
+    return notionalValue > 0 && leverageValue > 0 ? notionalValue / leverageValue : 0
+  }, [notionalValue, leverageValue])
+
   // Mock calculation, replace with actual logic
-  const liquidationPrice = notionalValue > 0 ? (side === "long" ? 35.2 : 48.7) : 0
+  const liquidationPrice = useMemo(() => {
+    return notionalValue > 0 ? (side === "long" ? 35.2 : 48.7) : 0
+  }, [notionalValue, side])
+
+  // Stable callback for leverage updates to prevent Slider re-renders
+  const handleLeverageChange = useCallback((value: number[]) => {
+    setLeverage(value)
+  }, [])
 
   const handleSubmit = useCallback(async () => {
     if (!notionalValue || leverageValue <= 0) return
@@ -41,9 +52,11 @@ export function useOrderForm({ initialSide = "long", initialLeverage = 1, baseTo
     // Potentially reset form or show success toast
   }, [side, notionalValue, leverageValue /*, onSubmitOrder */])
 
-  const orderButtonText = isSubmitting
-    ? "Opening Position..."
-    : `Open ${side === "long" ? "Long" : "Short"} ${baseToken} Position`
+  const orderButtonText = useMemo(() => {
+    return isSubmitting
+      ? "Opening Position..."
+      : `Open ${side === "long" ? "Long" : "Short"} ${baseToken} Position`
+  }, [isSubmitting, side, baseToken])
 
   return {
     side,
@@ -51,7 +64,7 @@ export function useOrderForm({ initialSide = "long", initialLeverage = 1, baseTo
     notional,
     setNotional,
     leverage,
-    setLeverage,
+    setLeverage: handleLeverageChange,
     isSubmitting,
     notionalValue,
     leverageValue,

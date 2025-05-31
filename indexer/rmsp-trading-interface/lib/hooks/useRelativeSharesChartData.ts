@@ -27,7 +27,8 @@ function formatSharePercentage(aggregateShare: string): number {
     // aggregateShare is scaled by 1e18, so divide to get percentage
     const shareValue = Number(BigInt(aggregateShare)) / 1e18;
     return shareValue * 100; // Convert to percentage (0-100)
-  } catch {
+  } catch (error) {
+    console.warn('Failed to format share percentage:', aggregateShare, error);
     return 0;
   }
 }
@@ -47,6 +48,12 @@ export function useRelativeSharesChartData(
   const now = Math.floor(Date.now() / 1000);
   const oneDayAgo = now - (24 * 60 * 60);
 
+  console.log('📊 Chart data hook:', { 
+    useMockData, 
+    timeRange: { from: oneDayAgo, to: now },
+    tokens: tokens.map(t => t.symbol)
+  });
+
   // Query real market share data
   const { data, loading: queryLoading, error: queryError } = useQuery<MarketSharesResponse>(
     GET_ALL_MARKET_SHARES,
@@ -58,11 +65,21 @@ export function useRelativeSharesChartData(
       },
       skip: useMockData,
       pollInterval: 10000, // Refresh every 10 seconds
+      errorPolicy: 'all', // Allow partial data
+      notifyOnNetworkStatusChange: true
     }
   );
 
+  console.log('📊 GraphQL query state:', { 
+    loading: queryLoading, 
+    error: queryError?.message,
+    dataItems: data?.marketShares?.items?.length,
+    skip: useMockData
+  });
+
   useEffect(() => {
     if (useMockData) {
+      console.log('📊 Using mock data');
       try {
         // Generate mock data for all tokens
         const mockData = generateMultiTokenMockData(
@@ -77,12 +94,19 @@ export function useRelativeSharesChartData(
           color: TOKEN_COLORS[token.symbol] || '#999999',
         }));
 
+        console.log('📊 Mock chart data generated:', formattedData.map(d => ({ 
+          symbol: d.symbol, 
+          points: d.data.length 
+        })));
+
         setChartData(formattedData);
         setMockError(null);
       } catch (err) {
+        console.error('📊 Mock data generation failed:', err);
         setMockError(err as Error);
       }
     } else if (data?.marketShares?.items) {
+      console.log('📊 Processing real data:', data.marketShares.items.length, 'items');
       try {
         // Group market share data by token symbol
         const dataByToken: Record<string, LineData[]> = {};
@@ -113,15 +137,29 @@ export function useRelativeSharesChartData(
           color: TOKEN_COLORS[symbol] || '#999999',
         }));
 
+        console.log('📊 Real chart data processed:', formattedData.map(d => ({ 
+          symbol: d.symbol, 
+          points: d.data.length,
+          samplePoint: d.data[0] 
+        })));
+
         setChartData(formattedData);
       } catch (err) {
-        console.error('Error processing market share data:', err);
+        console.error('📊 Error processing market share data:', err);
       }
+    } else if (!queryLoading && !useMockData) {
+      console.log('📊 No data returned from query');
     }
-  }, [data, tokens, useMockData]);
+  }, [data, tokens, useMockData, queryLoading]);
 
   const loading = useMockData ? false : queryLoading;
   const error = useMockData ? mockError : queryError || null;
+
+  console.log('📊 Hook returning:', { 
+    loading, 
+    error: error?.message, 
+    chartDataLength: chartData.length 
+  });
 
   return { chartData, loading, error };
 } 

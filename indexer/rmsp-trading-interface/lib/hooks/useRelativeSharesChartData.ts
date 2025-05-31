@@ -121,9 +121,26 @@ export function useRelativeSharesChartData(
           });
         });
 
-        // Sort data points by time for each token
+        // Sort and deduplicate data points by time for each token
         Object.keys(dataByToken).forEach(symbol => {
+          // Sort by time
           dataByToken[symbol].sort((a, b) => (a.time as number) - (b.time as number));
+          
+          // Remove duplicates - keep the last value for each timestamp
+          const deduped: LineData[] = [];
+          const seen = new Set<number>();
+          
+          // Process in reverse to keep the latest value for each timestamp
+          for (let i = dataByToken[symbol].length - 1; i >= 0; i--) {
+            const point = dataByToken[symbol][i];
+            const time = point.time as number;
+            if (!seen.has(time)) {
+              seen.add(time);
+              deduped.unshift(point); // Add to beginning to maintain order
+            }
+          }
+          
+          dataByToken[symbol] = deduped;
         });
 
         // Convert to TokenChartData format

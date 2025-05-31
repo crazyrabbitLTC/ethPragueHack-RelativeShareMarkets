@@ -1,4 +1,5 @@
 "use client"
+import React from "react"
 import { useState, useCallback, useEffect } from "react"
 import { CheckCircle, XCircle, AlertCircle } from "lucide-react" // Keep icons here or pass as props
 

@@ -132,42 +132,50 @@ export default function TradingInterface() {
           </div>
         )}
         
-        {/* Chart display */}
-        {!chartLoading && !chartError && chartData.length > 0 && (
-          <div className="space-y-2">
-            {/* Chart type toggle */}
-            <div className="flex justify-end">
-              <button
-                onClick={() => setShowAsAreaChart(!showAsAreaChart)}
-                className="px-3 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-700 transition-colors"
-              >
-                {showAsAreaChart ? 'Show Lines' : 'Show Area'}
-              </button>
-            </div>
-            <RelativeSharesChart 
-              data={chartData}
-              height={400}
-              showAsArea={showAsAreaChart}
-            />
+        {/* Chart and Share Table in two columns */}
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Chart column */}
+          <div>
+            {!chartLoading && !chartError && chartData.length > 0 && (
+              <div className="space-y-2">
+                {/* Chart type toggle */}
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setShowAsAreaChart(!showAsAreaChart)}
+                    className="px-3 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-700 transition-colors"
+                  >
+                    {showAsAreaChart ? 'Show Lines' : 'Show Area'}
+                  </button>
+                </div>
+                <RelativeSharesChart 
+                  data={chartData}
+                  height={300}
+                  showAsArea={showAsAreaChart}
+                />
+              </div>
+            )}
+            
+            {/* Fallback if chart data is empty and not loading/erroring */}
+            {!chartLoading && !chartError && chartData.length === 0 && !useMockData && (
+              <div className="relative w-full h-[300px] bg-gray-900/30 rounded-xl border border-gray-800 flex items-center justify-center">
+                <div className="text-center">
+                  <p className="text-gray-500 mb-2">No chart data available from indexer.</p>
+                  <button
+                    onClick={() => setUseMockData(true)}
+                    className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors"
+                  >
+                    Switch to Mock Data
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-        
-        {/* Fallback if chart data is empty and not loading/erroring */}
-        {!chartLoading && !chartError && chartData.length === 0 && !useMockData && (
-          <div className="relative w-full aspect-video bg-gray-900/30 rounded-xl border border-gray-800 flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-gray-500 mb-2">No chart data available from indexer.</p>
-              <button
-                onClick={() => setUseMockData(true)}
-                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors"
-              >
-                Switch to Mock Data
-              </button>
-            </div>
-          </div>
-        )}
 
-        <ShareTable tokens={selectedTokens} />
+          {/* Share Table column */}
+          <div>
+            <ShareTable tokens={selectedTokens} />
+          </div>
+        </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
           <OrderForm

@@ -12,7 +12,11 @@ import {
   DeepPartial,
   ChartOptions,
   LineSeriesOptions,
-  HistogramSeriesOptions
+  HistogramSeriesOptions,
+  LineSeries,
+  HistogramSeries,
+  AreaSeries,
+  AreaSeriesOptions
 } from 'lightweight-charts';
 import { TokenChartData } from '@/lib/hooks/useRelativeSharesChartData';
 import { Position, PositionUpdate } from '@/lib/graphql/types';
@@ -104,7 +108,7 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
         // Only show ETH and BTC
         if (tokenData.symbol !== 'ETH' && tokenData.symbol !== 'BTC') return;
         
-        const series = chart.addLineSeries({
+        const lineOptions: DeepPartial<LineSeriesOptions> = {
           color: tokenColors[tokenData.symbol] || '#888888',
           lineWidth: 2,
           title: `${tokenData.symbol} Share`,
@@ -113,7 +117,8 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
             type: 'custom',
             formatter: (price: any) => `${price.toFixed(2)}%`,
           },
-        });
+        };
+        const series = chart.addSeries(LineSeries, lineOptions);
 
         series.setData(tokenData.data);
         marketSeriesRef.current.set(tokenData.symbol, series);
@@ -142,7 +147,7 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
       });
 
       // Add P&L histogram
-      const pnlSeries = chart.addHistogramSeries({
+      const histogramOptions: DeepPartial<HistogramSeriesOptions> = {
         color: '#26a69a',
         priceScaleId: 'left',
         title: 'P&L',
@@ -150,7 +155,8 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
           type: 'custom',
           formatter: (price: any) => `$${price.toFixed(0)}`,
         },
-      });
+      };
+      const pnlSeries = chart.addSeries(HistogramSeries, histogramOptions);
 
       pnlSeries.setData(pnlData);
       pnlSeriesRef.current = pnlSeries;
@@ -231,7 +237,7 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
 
       // Add exposure area series
       if (exposureData.length > 0) {
-        const exposureSeries = chart.addAreaSeries({
+        const areaOptions: DeepPartial<AreaSeriesOptions> = {
           topColor: 'rgba(38, 166, 154, 0.1)',
           bottomColor: 'rgba(239, 83, 80, 0.1)',
           lineColor: 'rgba(255, 255, 255, 0.2)',
@@ -239,7 +245,8 @@ const TradingViewWithPositionsComponent: React.FC<TradingViewWithPositionsProps>
           priceScaleId: 'left',
           title: 'Exposure',
           crosshairMarkerVisible: false,
-        });
+        };
+        const exposureSeries = chart.addSeries(AreaSeries, areaOptions);
 
         exposureSeries.setData(exposureData.sort((a, b) => (a.time as number) - (b.time as number)));
         exposureSeriesRef.current = exposureSeries;

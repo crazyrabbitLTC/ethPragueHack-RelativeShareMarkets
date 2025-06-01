@@ -50,7 +50,7 @@ uint256 ethShare = ratioOracle.getRatioShare("ETH", "BTC");
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/your-repo/ethPragueHack-RelativeShareMarkets.git
+git clone https://github.com/crazyrabbitLTC/ethPragueHack-RelativeShareMarkets.git
 cd ethPragueHack-RelativeShareMarkets
 ```
 
@@ -190,4 +190,6 @@ MIT
 
 ## 👥 Team
 
-Built for ETH Prague 2025
+**Author**: Dennison Bertram
+
+Built for ETH Prague 2025 Hackathon

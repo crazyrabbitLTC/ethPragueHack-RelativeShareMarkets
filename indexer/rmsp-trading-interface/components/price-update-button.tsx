@@ -169,18 +169,37 @@ export function PriceUpdateButton() {
       
       // Convert VAAs to update data format
       const updateData = data.map((vaaItem: any) => {
-        if (!vaaItem || !vaaItem.vaa) {
-          throw new Error('Invalid VAA data');
+        // Debug log to see what we're getting
+        console.log('VAA item:', vaaItem);
+        
+        // Handle different response formats from Pyth
+        let base64Vaa;
+        if (typeof vaaItem === 'string') {
+          // If it's already a string, use it directly
+          base64Vaa = vaaItem;
+        } else if (vaaItem && vaaItem.vaa) {
+          // If it's an object with vaa property
+          base64Vaa = vaaItem.vaa;
+        } else if (vaaItem && vaaItem.data) {
+          // Sometimes it's in a data property
+          base64Vaa = vaaItem.data;
+        } else {
+          console.error('Invalid VAA format:', vaaItem);
+          throw new Error('Invalid VAA data format');
         }
         
-        // The VAA is base64 encoded, we need to convert to hex
-        const base64 = vaaItem.vaa;
-        const binaryString = atob(base64);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
+        // Convert base64 to hex
+        try {
+          const binaryString = atob(base64Vaa);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          return '0x' + Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+        } catch (e) {
+          console.error('Error decoding base64:', e);
+          throw new Error('Failed to decode VAA data');
         }
-        return '0x' + Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
       });
       
       console.log('Got', updateData.length, 'price updates');

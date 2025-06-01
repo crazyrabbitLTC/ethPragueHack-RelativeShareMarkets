@@ -13,11 +13,21 @@ import { formatUnits } from 'viem'
 export function PositionCardV2() {
   const { isConnected, address } = useAccount();
   const { position, isLoading: positionLoading, refetch: refetchPosition } = useUserPosition();
-  const { ratio, ratioPercent } = useCurrentRatio(position.baseToken || "ETH", position.quoteToken || "BTC");
+  const { ratio, ratioPercent, error: ratioError } = useCurrentRatio(position.baseToken || "ETH", position.quoteToken || "BTC");
   const { closePosition, addCollateral, isClosing, isAddingCollateral } = useTrading();
   const { balanceFormatted } = useUSDC();
   
   const [collateralAmount, setCollateralAmount] = useState('');
+  
+  // Debug logging
+  console.log('Position data:', {
+    baseToken: position.baseToken,
+    quoteToken: position.quoteToken,
+    hasPosition: position.hasPosition,
+    ratio: ratio?.toString(),
+    ratioPercent,
+    ratioError
+  });
 
   // Calculate position metrics
   const positionMetrics = useMemo(() => {

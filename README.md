@@ -2,6 +2,46 @@
 
 A decentralized perpetual trading protocol on Arbitrum that enables users to take long/short positions on the relative market share between tokens (starting with ETH vs BTC).
 
+## 📖 Detailed Project Description
+
+### Overview
+
+Relative Market Share Perpetuals (RMSP) is a novel DeFi trading primitive that enables traders to speculate on the relative dominance between cryptocurrencies, rather than their individual USD prices. This project introduces perpetual contracts based on market share ratios - starting with ETH vs BTC dominance.
+
+### The Problem We Solve
+
+Traditional perpetual contracts allow traders to bet on whether a single asset goes up or down in USD terms. However, many traders want to express views on relative performance - "Will ETH outperform BTC?" or "Will BTC maintain its dominance?" Current solutions require complex multi-leg trades that are capital inefficient and difficult to manage.
+
+### Our Solution
+
+RMSP creates a single, elegant perpetual contract that tracks the relative market share between two assets. For example, if ETH represents 2.37% of the combined ETH+BTC market cap, traders can go long or short this ratio directly.
+
+#### Key Innovation: Zero-Sum Relative Value
+
+Unlike traditional perps, RMSP positions are perfectly symmetric:
+- When ETH's share increases from 2.37% to 2.50%, longs profit exactly what shorts lose
+- No external funding is needed - the system is self-balancing
+- P&L is calculated as: `(currentShare - entryShare) × notional × direction`
+
+### Use Cases
+
+1. **Dominance Trading**: Bet on whether ETH will gain or lose market share vs BTC
+2. **Hedging**: Protect against relative underperformance of holdings
+3. **Market Neutral Strategies**: Express views on relative value without USD exposure
+4. **Future Extensions**: Any token pair ratios (ETH/SOL, BTC/GOLD, etc.)
+
+### Technical Achievements
+
+1. **First perpetual contract for relative market share** - Novel financial primitive
+2. **Real-time Pyth integration** - Live institutional-grade price feeds
+3. **Zero-sum architecture** - Self-balancing system without external funding
+4. **Production-ready deployment** - Verified contracts on Arbitrum mainnet
+5. **Professional trading UI** - TradingView charts with position management
+
+### Why This Matters
+
+RMSP introduces a new building block for DeFi that enables efficient relative value trading. By focusing on market share rather than USD prices, we create a more intuitive way to express views on crypto dominance battles. This primitive can extend beyond crypto to any paired assets where relative performance matters more than absolute price.
+
 ## 🚀 ETH Prague Hackathon - Milestone 1 (Proof of Concept)
 
 ### Features

@@ -89,7 +89,7 @@ export function useCurrentRatio(baseToken: string = "ETH", quoteToken: string = 
 
   return { 
     ratio: data || 0n, 
-    ratioPercent: data ? Number(data) / 1e16 : 0, // Convert to percentage (1e18 to percentage)
+    ratioPercent: data ? (Number(data) / 1e18) * 100 : 0, // Convert to percentage
     isLoading, 
     error 
   };
